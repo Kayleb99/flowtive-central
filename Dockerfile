@@ -5,8 +5,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql
 
-# Enable Apache mod_rewrite headers
-RUN a2enmod rewrite headers
+# Fix MPM conflict and enable Apache modules
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite headers
 
 # Copy the API folder into the Apache document root
 COPY api/ /var/www/html/api/
