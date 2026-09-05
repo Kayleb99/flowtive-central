@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description" content="Flowtive Central - Inventory Management">
+    <title>Flowtive Central - Inventory</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+                            400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                            800: '#1e40af', 900: '#1e3a8a', 950: '#172554'
+                        },
+                        neutral: {
+                            50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4',
+                            400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040',
+                            800: '#262626', 900: '#171717', 950: '#0a0a0a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
+        
+        /* Updated to minimalistic gradients */
+        body { 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            transition: background 0.3s; 
+        }
+        body.dark { 
+            background: linear-gradient(135deg, #000000 0%, #434343 100%);
+        }
+        
+        /* Minimalistic header */
+        .app-header { 
+            background: #1e1e1e;
+            height: 56px; 
+        }
+        .dark .app-header {
+            background: #0a0a0a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Minimalistic cards */
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            transition: all 0.15s ease;
+        }
+        .card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+        .dark .card { 
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .dark .card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+        
+        /* Minimalistic product cards */
+        .product-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            transition: all 0.15s ease;
+            overflow: hidden;
+        }
+        .product-card:hover { 
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .dark .product-card { 
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .dark .product-card:hover { 
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Minimalistic tab buttons */
+        .tab-btn {
+            padding: 10px 20px;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: #4f46e5; }
+        .tab-btn.active { 
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        .dark .tab-btn:hover { color: #818cf8; }
+        .dark .tab-btn.active { 
+            color: #818cf8;
+            border-color: #818cf8;
+        }
+        
+        /* ERP-Hub style page header */
+        .inv-page-title { font-size: 22px; font-weight: 700; color: #18181b; letter-spacing: -0.01em; }
+        .dark .inv-page-title { color: #f4f4f5; }
+        .inv-page-sub { font-size: 13.5px; color: #71717a; margin-top: 2px; }
+        .dark .inv-page-sub { color: #a1a1aa; }
+
+        /* ERP-Hub style KPI cards */
+        .kpi-card {
+            background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.08); border-radius: 14px;
+            padding: 18px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow .15s, border-color .15s;
+        }
+        .kpi-card:hover { box-shadow: 0 6px 22px rgba(15,17,21,.07); }
+        .dark .kpi-card { background: rgba(30,30,30,0.92); border-color: rgba(255,255,255,0.1); }
+        .kpi-card.clickable { cursor: pointer; }
+        .kpi-label { font-size: 12.5px; font-weight: 500; color: #71717a; text-transform: none; letter-spacing: 0; }
+        .dark .kpi-label { color: #a1a1aa; }
+        .kpi-value { font-size: 24px; font-weight: 700; color: #18181b; line-height: 1.1; }
+        .dark .kpi-value { color: #f4f4f5; }
+        .kpi-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        /* Tab count pills */
+        .tab-btn .tab-count {
+            margin-left: 8px; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px;
+            background: rgba(0,0,0,0.06); color: #64748b;
+        }
+        .dark .tab-btn .tab-count { background: rgba(255,255,255,0.1); color: #94a3b8; }
+
+        /* Minimalistic input fields */
+        .input-field {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #0f172a;
+            transition: all 0.15s;
+        }
+        .input-field:focus { 
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .dark .input-field { 
+            background: rgba(40, 40, 40, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #e2e8f0;
+        }
+        .dark .input-field:focus { 
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+        }
+        
+        /* Minimalistic buttons */
+        .btn-primary { 
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+        }
+        .btn-primary:hover { 
+            background: #4338ca;
+        }
+        .dark .btn-primary { 
+            background: #6366f1;
+            color: white;
+        }
+        .dark .btn-primary:hover { 
+            background: #818cf8;
+        }
+        
+        /* Stock bar */
+        .stock-bar { height: 4px; border-radius: 2px; background: rgba(0,0,0,0.1); overflow: hidden; }
+        .dark .stock-bar { background: rgba(255,255,255,0.1); }
+        .stock-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        
+        /* Minimalistic view toggle */
+        .view-btn { padding: 8px; border-radius: 6px; transition: all 0.15s; background: transparent; color: #94a3b8; }
+        .view-btn.active { 
+            background: #1e1e1e;
+            color: white;
+        }
+        .dark .view-btn.active { 
+            background: #6366f1;
+            color: white;
+        }
+        
+        /* Minimalistic modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000; 
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content { 
+            background: white; 
+            border-radius: 16px; 
+            max-width: 95vw; 
+            width: 500px;
+            max-height: 90vh; 
+            overflow-y: auto; 
+            animation: slideUp 0.25s ease;
+        }
+        .dark .modal-content { 
+            background: #1a1a1a;
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Minimalistic toast */
+        .toast { 
+            position: fixed; 
+            top: 70px; 
+            right: 20px; 
+            padding: 14px 18px; 
+            border-radius: 10px; 
+            background: white; 
+            border: 1px solid rgba(0, 0, 0, 0.08); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            z-index: 1100; 
+            transform: translateX(120%); 
+            transition: transform 0.3s; 
+            max-width: 90vw;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #22c55e; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        .dark .toast { 
+            background: #222;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+        
+        /* Minimalistic dropdown */
+        .dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); min-width: 200px; z-index: 50; overflow: hidden; }
+        .dropdown.active { display: block; }
+        .dark .dropdown { 
+            background: #1a1a1a;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Icon grid */
+        .icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+        .icon-item { 
+            width: 36px; 
+            height: 36px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.15s;
+            color: #64748b;
+        }
+        .icon-item:hover { background: rgba(79, 70, 229, 0.05); color: #4f46e5; }
+        .dark .icon-item { color: #94a3b8; }
+        .dark .icon-item:hover { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
+        .icon-item.selected { 
+            background: #4f46e5;
+            color: white;
+        }
+        .dark .icon-item.selected { 
+            background: #6366f1;
+            color: white;
+        }
+        
+        /* Image upload */
+        .image-upload {
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .image-upload:hover { 
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .image-upload.has-image { border-style: solid; padding: 8px; }
+        .dark .image-upload { border-color: rgba(255, 255, 255, 0.15); }
+        .dark .image-upload:hover { 
+            border-color: #818cf8;
+            background: rgba(129, 140, 248, 0.1);
+        }
+        
+        /* Added product image styles for displaying uploaded images */
+        .product-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.02);
+        }
+        .dark .product-image {
+            background: rgba(255,255,255,0.02);
+        }
+        .product-image-placeholder {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            color: #94a3b8;
+        }
+        .dark .product-image-placeholder {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        /* Landscape prompt */
+        .landscape-prompt { 
+            position: fixed; 
+            inset: 0; 
+            background: #1e1e1e;
+            color: white; 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 9999; 
+            text-align: center; 
+            padding: 24px;
+        }
+        @media (max-width: 768px) and (orientation: portrait) {
+            .landscape-prompt { display: flex; }
+            .main-content { display: none; }
+        }
+        
+        /* PWA prompt */
+        .pwa-prompt { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: #1e1e1e;
+            color: white; 
+            padding: 16px 20px; 
+            transform: translateY(100%); 
+            transition: transform 0.3s; 
+            z-index: 1000;
+        }
+        .pwa-prompt.show { transform: translateY(0); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        /* Status indicators */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-online { background: #22c55e; }
+        .status-offline { background: #ef4444; }
+        
+        /* Added theme button style from POS */
+        .theme-btn { 
+            width: 32px; height: 32px; 
+            border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.15s; 
+            background: rgba(255,255,255,0.1); color: white;
+            border: none;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* ---- Customize slide-over (mirrors ERP hub) ---- */
+        .inv-cust-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:90; opacity:0; visibility:hidden; transition:.2s; }
+        .inv-cust-overlay.active { opacity:1; visibility:visible; }
+        .inv-cust { position:fixed; top:0; right:0; height:100vh; width:360px; max-width:90vw; background:#ffffff; border-left:1px solid #e5e5e5; z-index:95; transform:translateX(100%); transition:transform .25s ease; }
+        .dark .inv-cust { background:#1c1c1e; border-left-color:#2a2a2a; }
+        .inv-cust.active { transform:translateX(0); }
+        .inv-cust-opt { border:1.5px solid #e5e5e5; border-radius:12px; padding:14px 8px; display:flex; flex-direction:column; align-items:center; gap:7px; cursor:pointer; font-size:12.5px; font-weight:500; color:#737373; transition:.15s; background:transparent; }
+        .dark .inv-cust-opt { border-color:#3a3a3a; color:#a3a3a3; }
+        .inv-cust-opt:hover { border-color:#a3a3a3; }
+        .inv-cust-opt.active { border-color:#10b981; background:rgba(16,185,129,.1); color:#059669; }
+        .dark .inv-cust-opt.active { border-color:#10b981; background:rgba(16,185,129,.15); color:#34d399; }
+        .inv-swatch { width:26px; height:26px; border-radius:50%; flex-shrink:0; }
+
+        /* Accent color variables (shared with ERP hub) */
+        body { --accent:#10b981; --accent-strong:#059669; --accent-soft:rgba(16,185,129,.12); }
+        body[data-accent="emerald"] { --accent:#10b981; --accent-strong:#059669; --accent-soft:rgba(16,185,129,.12); }
+        body[data-accent="blue"]    { --accent:#3b82f6; --accent-strong:#2563eb; --accent-soft:rgba(59,130,246,.12); }
+        body[data-accent="violet"]  { --accent:#8b5cf6; --accent-strong:#7c3aed; --accent-soft:rgba(139,92,246,.12); }
+        body[data-accent="rose"]    { --accent:#f43f5e; --accent-strong:#e11d48; --accent-soft:rgba(244,63,94,.12); }
+        body[data-accent="orange"]  { --accent:#f97316; --accent-strong:#ea580c; --accent-soft:rgba(249,115,22,.12); }
+        body[data-accent="slate"]   { --accent:#64748b; --accent-strong:#475569; --accent-soft:rgba(100,116,139,.14); }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Landscape Prompt -->
+    <div class="landscape-prompt">
+        <i class="fas fa-mobile-alt text-5xl mb-4 animate-pulse"></i>
+        <h2 class="text-xl font-semibold mb-2">Rotate Your Device</h2>
+        <p class="text-neutral-400">Please rotate to landscape mode for the best experience</p>
+    </div>
+
+    <!-- PWA Install Prompt -->
+    <div id="pwaPrompt" class="pwa-prompt">
+        <div class="flex items-center justify-between max-w-lg mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-boxes text-white"></i>
+                </div>
+                <div>
+                    <p class="font-semibold">Install Flowtive</p>
+                    <p class="text-sm text-neutral-400">Add to home screen</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="dismissPWA()" class="px-4 py-2 text-neutral-400 hover:text-white">Later</button>
+                <button onclick="installPWA()" class="px-4 py-2 bg-white text-neutral-900 rounded-lg font-medium">Install</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content min-h-screen flex flex-col">
+        <!-- Header redesigned to match POS exactly -->
+        <header class="app-header fixed top-0 left-0 right-0 z-50">
+            <div class="flex items-center justify-between h-full px-4">
+                <!-- Left: Logo and title -->
+                <div class="flex items-center">
+                    <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-boxes text-white text-sm"></i>
+                    </div>
+                    <div class="ml-3 hidden sm:block">
+                        <h1 class="text-sm font-semibold text-white">Flowtive Inventory</h1>
+                        <p class="text-xs text-neutral-400">Stock Management</p>
+                    </div>
+                </div>
+
+                <!-- Right: Controls -->
+                <div class="flex items-center gap-2">
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="theme-btn">
+                        <i class="fas fa-sun dark:hidden text-sm"></i>
+                        <i class="fas fa-moon hidden dark:block text-sm"></i>
+                    </button>
+
+                    <!-- Barcode Scanner -->
+                    <button onclick="openInvBarcodeScanner()" class="theme-btn" title="Barcode Scanner">
+                        <i class="fas fa-barcode text-sm"></i>
+                    </button>
+
+                    <!-- Customize -->
+                    <button onclick="openCustomize()" class="theme-btn" title="Customize">
+                        <i class="fas fa-palette text-sm"></i>
+                    </button>
+
+                    <!-- Network Status -->
+                    <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg">
+                        <span class="status-dot status-online" id="networkStatusDot"></span>
+                        <span class="text-xs text-neutral-300" id="networkText">Online</span>
+                    </div>
+                    
+                    <!-- Live Clock -->
+                    <span class="text-xs text-neutral-400 font-mono hidden md:block" id="liveClock">00:00:00</span>
+                    
+                    <!-- Module Switcher -->
+                    <div class="relative module-dropdown">
+                        <button onclick="toggleDropdown('moduleDropdown')" class="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+                            <i class="fas fa-th-large text-white text-sm"></i>
+                        </button>
+                        <div class="dropdown" id="moduleDropdown">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleDropdown('userDropdown')" class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <!-- Display full name instead of username -->
+                            <span class="text-white text-sm hidden sm:block" id="headerUserName">User</span>
+                        </button>
+                        <div class="dropdown" id="userDropdown">
+                            <div class="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <!-- Show full name and role like POS -->
+                                        <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100" id="dropdownUserName">User</p>
+                                        <p class="text-xs text-neutral-500" id="dropdownUserRole">Role</p>
+                                    </div>
+                                    <button onclick="openModal('userSettingsModal')" class="p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt w-5 mr-2"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Fixed padding - changed pt-16 to mt-14 (56px header) and added proper margin -->
+        <main class="flex-1 p-4 lg:p-6 bg-neutral-50 dark:bg-neutral-950 mt-14">
+            <!-- Page header (ERP Hub style) -->
+            <div class="mb-5">
+                <h2 class="inv-page-title">Inventory</h2>
+                <p class="inv-page-sub">Track stock levels, value, and product catalog at a glance.</p>
+            </div>
+
+            <!-- Stats Cards: Stock Value, Potential Revenue, Stock Count, Low Stock Alert -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="kpi-card">
+                    <div class="flex items-start justify-between">
+                        <span class="kpi-label">Stock Value</span>
+                        <span class="kpi-icon" style="background:rgba(139,92,246,.13);color:#7c3aed"><i class="fas fa-coins"></i></span>
+                    </div>
+                    <p class="kpi-value" id="stockValue">KES 0</p>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-start justify-between">
+                        <span class="kpi-label">Potential Revenue</span>
+                        <span class="kpi-icon" style="background:rgba(16,185,129,.13);color:#059669"><i class="fas fa-chart-line"></i></span>
+                    </div>
+                    <p class="kpi-value" style="color:#059669" id="potentialSales">KES 0</p>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-start justify-between">
+                        <span class="kpi-label">Stock Count</span>
+                        <span class="kpi-icon" style="background:rgba(37,99,235,.12);color:#2563eb"><i class="fas fa-boxes-stacked"></i></span>
+                    </div>
+                    <p class="kpi-value" id="stockCount">0</p>
+                </div>
+                <div class="kpi-card clickable hover:border-red-300 dark:hover:border-red-700" onclick="switchTab('lowstock')">
+                    <div class="flex items-start justify-between">
+                        <span class="kpi-label">Low Stock Alert</span>
+                        <span class="kpi-icon" style="background:rgba(239,68,68,.13);color:#dc2626"><i class="fas fa-triangle-exclamation"></i></span>
+                    </div>
+                    <p class="kpi-value" style="color:#dc2626" id="lowStockCount">0</p>
+                </div>
+            </div>
+
+            <!-- Horizontal tab navigation -->
+            <div class="flex items-center gap-1 border-b border-neutral-200 dark:border-neutral-700 mb-6 overflow-x-auto">
+                <button class="tab-btn active" onclick="switchTab('products')" data-tab="products">
+                    <i class="fas fa-box mr-2"></i>Products<span class="tab-count" id="tabCountProducts">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('categories')" data-tab="categories">
+                    <i class="fas fa-tags mr-2"></i>Categories<span class="tab-count" id="tabCountCategories">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('units')" data-tab="units">
+                    <i class="fas fa-ruler mr-2"></i>Units<span class="tab-count" id="tabCountUnits">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('lowstock')" data-tab="lowstock">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Low Stock<span class="tab-count" id="tabCountLowStock">0</span>
+                </button>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="products-tab" class="tab-content">
+                <!-- Controls -->
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                        <input type="text" id="productSearch" placeholder="Search products..." class="input-field pl-10" oninput="filterProducts()">
+                    </div>
+                    <select id="categoryFilter" class="input-field w-full sm:w-48" onchange="filterProducts()">
+                        <option value="">All Categories</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button onclick="setView('grid')" id="gridViewBtn" class="view-btn active">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button onclick="setView('list')" id="listViewBtn" class="view-btn">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button onclick="openModal('addProductModal')" class="h-10 px-4 btn-primary rounded-lg font-medium flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span class="hidden sm:inline">Add Product</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid View -->
+                <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+
+                <!-- List View -->
+                <div id="productsList" class="hidden">
+                    <div class="card overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-neutral-50 dark:bg-neutral-800">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Product</th>
+                                        <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Category</th>
+                                        <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Cost</th>
+                                        <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Price</th>
+                                        <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Min Price</th>
+                                        <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Stock</th>
+                                        <th class="text-center px-4 py-3 text-xs font-semibold text-neutral-600 dark:text-neutral-400">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsListBody" class="divide-y divide-neutral-100 dark:divide-neutral-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock Tab -->
+            <div id="lowstock-tab" class="tab-content hidden">
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b border-neutral-200 dark:border-neutral-700">
+                        <h3 class="font-semibold text-neutral-900 dark:text-neutral-100">Low Stock Items</h3>
+                        <p class="text-sm text-neutral-500">Products that need restocking</p>
+                    </div>
+                    <div id="lowStockList" class="divide-y divide-neutral-100 dark:divide-neutral-800"></div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-neutral-900 dark:text-neutral-100">Categories</h3>
+                    <button onclick="openModal('addCategoryModal')" class="h-9 px-4 btn-primary rounded-lg font-medium flex items-center gap-2 text-sm">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Category</span>
+                    </button>
+                </div>
+                <div id="categoriesGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+            </div>
+
+            <!-- Units Tab -->
+            <div id="units-tab" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-neutral-900 dark:text-neutral-100">Units of Measurement</h3>
+                    <button onclick="openModal('addUnitModal')" class="h-9 px-4 btn-primary rounded-lg font-medium flex items-center gap-2 text-sm">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Unit</span>
+                    </button>
+                </div>
+                <div id="unitsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Product Modal -->
+    <!-- Inventory Barcode Scanner Modal -->
+    <div id="invBarcodeScannerModal" class="modal" onclick="if(event.target===this)closeModal('invBarcodeScannerModal')">
+        <div class="modal-content w-full max-w-md p-6 m-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100"><i class="fas fa-barcode mr-2" style="color:#059669"></i>Barcode Scanner</h3>
+                <button onclick="closeModal('invBarcodeScannerModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-sm text-neutral-500 mb-3">Scan a barcode or enter SKU to look up inventory details. Works with USB and Bluetooth scanners.</p>
+            <!-- Quick actions toggle -->
+            <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl mb-4 cursor-pointer">
+                <div>
+                    <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Quick Edit Mode</p>
+                    <p class="text-xs text-neutral-400">Auto-open edit modal when product is found</p>
+                </div>
+                <input type="checkbox" id="invBarcodeQuickEdit" class="w-5 h-5 accent-emerald-600">
+            </label>
+            <div class="relative mb-4">
+                <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                <input type="text" id="invBarcodeInput" class="input-field pl-11 text-lg tracking-widest uppercase" placeholder="Scan or type SKU / barcode..." oninput="onInvBarcodeInput(this.value)" autofocus>
+            </div>
+            <div id="invBarcodeResult" class="text-center text-neutral-400 text-sm py-3">
+                <i class="fas fa-wifi text-2xl mb-2 block"></i>
+                Waiting for scan input...
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ CUSTOMIZE PANEL (ERP-style slide-over) ============ -->
+    <div class="inv-cust-overlay" id="invCustOverlay" onclick="closeCustomize()"></div>
+    <aside class="inv-cust" id="invCustPanel">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <div>
+                <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Customize</h3>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">Personalize your inventory experience.</p>
+            </div>
+            <button onclick="closeCustomize()" class="theme-btn"><i class="fas fa-xmark text-sm"></i></button>
+        </div>
+        <div class="p-5 space-y-7 overflow-y-auto" style="max-height:calc(100vh - 72px)">
+            <!-- Theme -->
+            <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Theme</p>
+                <div class="grid grid-cols-3 gap-3" id="invCustTheme">
+                    <button class="inv-cust-opt" data-theme="light" onclick="setThemeMode('light')"><i class="fas fa-sun text-base"></i>Light</button>
+                    <button class="inv-cust-opt" data-theme="dark" onclick="setThemeMode('dark')"><i class="fas fa-moon text-base"></i>Dark</button>
+                    <button class="inv-cust-opt" data-theme="system" onclick="setThemeMode('system')"><i class="fas fa-desktop text-base"></i>System</button>
+                </div>
+            </div>
+            <!-- Color -->
+            <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Color</p>
+                <div class="grid grid-cols-3 gap-3" id="invCustColor">
+                    <button class="inv-cust-opt" data-accent="emerald" onclick="setAccent('emerald')"><span class="inv-swatch" style="background:#10b981"></span>Emerald</button>
+                    <button class="inv-cust-opt" data-accent="blue" onclick="setAccent('blue')"><span class="inv-swatch" style="background:#3b82f6"></span>Blue</button>
+                    <button class="inv-cust-opt" data-accent="violet" onclick="setAccent('violet')"><span class="inv-swatch" style="background:#8b5cf6"></span>Violet</button>
+                    <button class="inv-cust-opt" data-accent="rose" onclick="setAccent('rose')"><span class="inv-swatch" style="background:#f43f5e"></span>Rose</button>
+                    <button class="inv-cust-opt" data-accent="orange" onclick="setAccent('orange')"><span class="inv-swatch" style="background:#f97316"></span>Orange</button>
+                    <button class="inv-cust-opt" data-accent="slate" onclick="setAccent('slate')"><span class="inv-swatch" style="background:#64748b"></span>Slate</button>
+                </div>
+            </div>
+            <!-- Density -->
+            <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Density</p>
+                <div class="grid grid-cols-3 gap-3" id="invCustDensity">
+                    <button class="inv-cust-opt" data-density="compact" onclick="setDensity('compact')"><i class="fas fa-bars text-base"></i>Compact</button>
+                    <button class="inv-cust-opt" data-density="comfortable" onclick="setDensity('comfortable')"><i class="fas fa-grip-lines text-base"></i>Comfortable</button>
+                    <button class="inv-cust-opt" data-density="spacious" onclick="setDensity('spacious')"><i class="fas fa-equals text-base"></i>Spacious</button>
+                </div>
+            </div>
+            <!-- Inventory Display Options -->
+            <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Display Options</p>
+                <div class="space-y-2">
+                    <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Show Product Images</p>
+                            <p class="text-xs text-neutral-400">Display thumbnails in product cards and list</p>
+                        </div>
+                        <input type="checkbox" id="invCustomShowImages" class="w-4 h-4 accent-emerald-600" checked onchange="saveInvCustomize()">
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Show Stock Quantity</p>
+                            <p class="text-xs text-neutral-400">Display stock count on product cards</p>
+                        </div>
+                        <input type="checkbox" id="invCustomShowStock" class="w-4 h-4 accent-emerald-600" checked onchange="saveInvCustomize()">
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Show Cost Price</p>
+                            <p class="text-xs text-neutral-400">Display cost price alongside selling price</p>
+                        </div>
+                        <input type="checkbox" id="invCustomShowCost" class="w-4 h-4 accent-emerald-600" onchange="saveInvCustomize()">
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Show Color &amp; Measurements</p>
+                            <p class="text-xs text-neutral-400">Display color and size info as secondary text</p>
+                        </div>
+                        <input type="checkbox" id="invCustomShowColorMeta" class="w-4 h-4 accent-emerald-600" checked onchange="saveInvCustomize()">
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Highlight Low Stock</p>
+                            <p class="text-xs text-neutral-400">Show visual warning on low-stock items</p>
+                        </div>
+                        <input type="checkbox" id="invCustomHighlightLow" class="w-4 h-4 accent-emerald-600" checked onchange="saveInvCustomize()">
+                    </label>
+                </div>
+            </div>
+            <!-- Default View -->
+            <div>
+                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Default View</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="setView('grid');saveInvCustomize();syncCustomizeUI();showToast('View set to Grid','success')" class="inv-cust-opt" id="invCustViewGrid"><i class="fas fa-th-large text-base"></i>Grid</button>
+                    <button onclick="setView('list');saveInvCustomize();syncCustomizeUI();showToast('View set to List','success')" class="inv-cust-opt" id="invCustViewList"><i class="fas fa-list text-base"></i>List</button>
+                </div>
+            </div>
+            <button onclick="resetCustomize()" class="w-full py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 text-sm font-medium text-neutral-700 dark:text-neutral-300">Reset to Defaults</button>
+        </div>
+    </aside>
+
+    <div id="addProductModal" class="modal" onclick="if(event.target===this)closeModal('addProductModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Add Product</h3>
+                <button onclick="closeModal('addProductModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addProductForm" onsubmit="handleAddProduct(event)" class="p-5 space-y-4">
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Product Image</label>
+                    <div class="image-upload" id="productImageUpload" onclick="document.getElementById('productImageInput').click()">
+                        <input type="file" id="productImageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'productImagePreview', 'productImageData')">
+                        <input type="hidden" id="productImageData">
+                        <div id="productImagePreview">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                            <p class="text-sm text-neutral-500">Click to upload image</p>
+                            <p class="text-xs text-neutral-400">PNG, JPG up to 2MB</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Product Name *</label>
+                    <input type="text" id="productName" class="input-field" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Category *</label>
+                        <select id="productCategory" class="input-field" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unit *</label>
+                        <select id="productUnit" class="input-field" required></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Cost Price *</label>
+                        <input type="number" id="productCost" class="input-field" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Selling Price *</label>
+                        <input type="number" id="productPrice" class="input-field" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Min Price</label>
+                        <input type="number" id="productMinPrice" class="input-field" step="0.01" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Stock Qty *</label>
+                        <input type="number" id="productStock" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Low Stock Alert</label>
+                        <input type="number" id="productLowStock" class="input-field" value="10">
+                    </div>
+                </div>
+                <!-- Multi-unit / packaging -->
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="addMultiUnitToggle" onchange="toggleMultiUnit('add')" class="w-4 h-4 accent-emerald-600">
+                        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sell in multiple units (rolls, cartons, cut-to-length)</span>
+                    </label>
+                    <div id="addMultiUnitSection" class="hidden mt-3 space-y-3">
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">The first row is your <strong>base/stock unit</strong> (the smallest unit, e.g. metre or piece). The Stock Qty above is counted in base units. Add package units below (e.g. 1 Roll = 100 metres).</p>
+                        <div id="addUnitRows" class="space-y-3"></div>
+                        <button type="button" onclick="addUnitRow('add')" class="text-sm text-emerald-600 font-medium flex items-center gap-1"><i class="fas fa-plus"></i> Add unit</button>
+                    </div>
+                </div>
+                <!-- Color & Measurements -->
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                    <p class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-3">Color &amp; Measurements <span class="normal-case font-normal">(optional — shown as secondary text on item)</span></p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Color(s)</label>
+                            <input type="text" id="productColor" class="input-field" placeholder="e.g. Red, Blue, Black">
+                            <p class="text-xs text-neutral-400 mt-1">Separate multiple colors with commas</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Measurements / Size</label>
+                            <input type="text" id="productMeasurement" class="input-field" placeholder="e.g. L, XL, 30×40cm">
+                            <p class="text-xs text-neutral-400 mt-1">Size, dimensions, or variant info</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Description</label>
+                    <textarea id="productDescription" class="input-field" rows="2" placeholder="Optional description"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('addProductModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Add Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="modal" onclick="if(event.target===this)closeModal('editProductModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Edit Product</h3>
+                <button onclick="closeModal('editProductModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editProductForm" onsubmit="handleEditProduct(event)" class="p-5 space-y-4">
+                <input type="hidden" id="editProductId">
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Product Image</label>
+                    <div class="image-upload" id="productImageUpload" onclick="document.getElementById('editProductImageInput').click()">
+                        <input type="file" id="editProductImageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'editProductImagePreview', 'editProductImageData')">
+                        <input type="hidden" id="editProductImageData">
+                        <div id="editProductImagePreview">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                            <p class="text-sm text-neutral-500">Click to upload image</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Product Name *</label>
+                    <input type="text" id="editProductName" class="input-field" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Category *</label>
+                        <select id="editProductCategory" class="input-field" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unit *</label>
+                        <select id="editProductUnit" class="input-field" required></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Cost Price *</label>
+                        <input type="number" id="editProductCost" class="input-field" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Selling Price *</label>
+                        <input type="number" id="editProductPrice" class="input-field" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Min Price</label>
+                        <input type="number" id="editProductMinPrice" class="input-field" step="0.01">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Stock Qty *</label>
+                        <input type="number" id="editProductStock" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Low Stock Alert</label>
+                        <input type="number" id="editProductLowStock" class="input-field">
+                    </div>
+                </div>
+                <!-- Multi-unit / packaging -->
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="editMultiUnitToggle" onchange="toggleMultiUnit('edit')" class="w-4 h-4 accent-emerald-600">
+                        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Sell in multiple units (rolls, cartons, cut-to-length)</span>
+                    </label>
+                    <div id="editMultiUnitSection" class="hidden mt-3 space-y-3">
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">The first row is your <strong>base/stock unit</strong> (the smallest unit, e.g. metre or piece). The Stock Qty above is counted in base units. Add package units below (e.g. 1 Roll = 100 metres).</p>
+                        <div id="editUnitRows" class="space-y-3"></div>
+                        <button type="button" onclick="addUnitRow('edit')" class="text-sm text-emerald-600 font-medium flex items-center gap-1"><i class="fas fa-plus"></i> Add unit</button>
+                    </div>
+                </div>
+                <!-- Color & Measurements -->
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                    <p class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-3">Color &amp; Measurements <span class="normal-case font-normal">(optional — shown as secondary text on item)</span></p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Color(s)</label>
+                            <input type="text" id="editProductColor" class="input-field" placeholder="e.g. Red, Blue, Black">
+                            <p class="text-xs text-neutral-400 mt-1">Separate multiple colors with commas</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Measurements / Size</label>
+                            <input type="text" id="editProductMeasurement" class="input-field" placeholder="e.g. L, XL, 30×40cm">
+                            <p class="text-xs text-neutral-400 mt-1">Size, dimensions, or variant info</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Description</label>
+                    <textarea id="editProductDescription" class="input-field" rows="2"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('editProductModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="addCategoryModal" class="modal" onclick="if(event.target===this)closeModal('addCategoryModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Add Category</h3>
+                <button onclick="closeModal('addCategoryModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addCategoryForm" onsubmit="handleAddCategory(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Category Name *</label>
+                    <input type="text" id="categoryName" class="input-field" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Select Icon *</label>
+                    <input type="hidden" id="categoryIcon" value="fa-tshirt">
+                    <div class="icon-grid p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg max-h-40 overflow-y-auto" id="categoryIconGrid"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Color</label>
+                    <input type="color" id="categoryColor" class="w-full h-10 rounded-lg cursor-pointer border border-neutral-200 dark:border-neutral-700" value="#f59e0b">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('addCategoryModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div id="editCategoryModal" class="modal" onclick="if(event.target===this)closeModal('editCategoryModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Edit Category</h3>
+                <button onclick="closeModal('editCategoryModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editCategoryForm" onsubmit="handleEditCategory(event)" class="p-5 space-y-4">
+                <input type="hidden" id="editCategoryId">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Category Name *</label>
+                    <input type="text" id="editCategoryName" class="input-field" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Select Icon *</label>
+                    <input type="hidden" id="editCategoryIcon" value="fa-tshirt">
+                    <div class="icon-grid p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg max-h-40 overflow-y-auto" id="editCategoryIconGrid"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Color</label>
+                    <input type="color" id="editCategoryColor" class="w-full h-10 rounded-lg cursor-pointer border border-neutral-200 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Description</label>
+                    <textarea id="editCategoryDescription" class="input-field" rows="2"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('editCategoryModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Unit Modal -->
+    <div id="addUnitModal" class="modal" onclick="if(event.target===this)closeModal('addUnitModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Add Unit</h3>
+                <button onclick="closeModal('addUnitModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addUnitForm" onsubmit="handleAddUnit(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unit Name *</label>
+                    <input type="text" id="unitName" class="input-field" placeholder="e.g., Meters" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Abbreviation *</label>
+                    <input type="text" id="unitAbbreviation" class="input-field" placeholder="e.g., m" required>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('addUnitModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Add Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Unit Modal -->
+    <div id="editUnitModal" class="modal" onclick="if(event.target===this)closeModal('editUnitModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Edit Unit</h3>
+                <button onclick="closeModal('editUnitModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editUnitForm" onsubmit="handleEditUnit(event)" class="p-5 space-y-4">
+                <input type="hidden" id="editUnitId">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unit Name *</label>
+                    <input type="text" id="editUnitName" class="input-field" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Abbreviation *</label>
+                    <input type="text" id="editUnitAbbreviation" class="input-field" required>
+                </div>
+                <!-- Added Symbol, Type, Description fields to Edit Unit Modal -->
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Symbol</label>
+                    <input type="text" id="editUnitSymbol" class="input-field" placeholder="e.g., m">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Type</label>
+                    <input type="text" id="editUnitType" class="input-field" placeholder="e.g., Length">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Description</label>
+                    <textarea id="editUnitDescription" class="input-field" rows="2"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('editUnitModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div id="stockModal" class="modal" onclick="if(event.target===this)closeModal('stockModal')">
+        <div class="modal-content">
+            <div class="p-5 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Adjust Stock</h3>
+                <button onclick="closeModal('stockModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="stockForm" onsubmit="handleStockAdjustment(event)" class="p-5 space-y-4">
+                <input type="hidden" id="stockProductId">
+                <div class="p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+                    <p class="font-medium text-neutral-900 dark:text-neutral-100" id="stockProductName">Product Name</p>
+                    <p class="text-sm text-neutral-500">Current Stock: <span id="stockCurrentQty" class="font-semibold">0</span></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Adjustment Type</label>
+                    <select id="stockAdjustmentType" class="input-field">
+                        <option value="add">Add Stock</option>
+                        <option value="remove">Remove Stock</option>
+                        <option value="set">Set Stock</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Quantity</label>
+                    <input type="number" id="stockAdjustmentQty" class="input-field" min="0" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Reason</label>
+                    <textarea id="stockAdjustmentReason" class="input-field" rows="2" placeholder="Optional"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('stockModal')" class="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 btn-primary rounded-lg font-medium">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Settings Modal -->
+    <div id="userSettingsModal" class="modal" onclick="if(event.target===this)closeModal('userSettingsModal')"
+        <div class="modal-content w-full max-w-md p-6 m-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Account Settings</h3>
+                <button onclick="closeModal('userSettingsModal')" class="text-neutral-500 hover:text-neutral-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="userSettingsForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-neutral-600 dark:text-neutral-400 mb-2">Full Name</label>
+                    <input type="text" id="settingsName" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm text-neutral-600 dark:text-neutral-400 mb-2">Email</label>
+                    <input type="email" id="settingsEmail" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm text-neutral-600 dark:text-neutral-400 mb-2">Phone</label>
+                    <input type="text" id="settingsPhone" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 rounded-lg">
+                </div>
+                <hr class="border-neutral-200 dark:border-neutral-700">
+                <div>
+                    <label class="block text-sm text-neutral-600 dark:text-neutral-400 mb-2">New Password</label>
+                    <input type="password" id="settingsNewPassword" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 rounded-lg" placeholder="Leave blank to keep current">
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('userSettingsModal')" class="flex-1 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800">Cancel</button>
+                    <button type="submit" class="flex-1 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg font-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // State
+        let currentUser = null;
+        let products = [];
+        let categories = [];
+        let units = [];
+        let currentView = localStorage.getItem('flowtive_inventory_view') || 'grid';
+        let deferredPrompt = null;
+        const token = localStorage.getItem('flowtive_token'); // Moved token to be accessible globally
+
+        const API_BASE = 'api';
+        let CURRENCY = 'KES'; // system currency (KES or USD), loaded from settings
+
+        function applyCompanySettings(s) {
+            if (!s) return;
+            if (s.currency) CURRENCY = s.currency;
+            const nameEl = document.getElementById('headerCompanyName');
+            if (nameEl && s.company_name) nameEl.textContent = s.company_name;
+        }
+
+        async function loadCompanySettings() {
+            // 1. Apply instantly from localStorage (written by ERP Settings save)
+            try {
+                const cached = JSON.parse(localStorage.getItem('flowtive_settings') || 'null');
+                if (cached) applyCompanySettings(cached);
+            } catch (e) {}
+
+            // 2. Always fetch fresh from API
+            try {
+                const res = await fetch(`${API_BASE}/settings/index.php`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success && data.settings) {
+                    applyCompanySettings(data.settings);
+                    localStorage.setItem('flowtive_settings', JSON.stringify(data.settings));
+                }
+            } catch (err) {
+                console.error('Load company settings error:', err);
+            }
+        }
+
+        // Live update when ERP broadcasts a settings change in another tab
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'flowtive_settings' && e.newValue) {
+                try { applyCompanySettings(JSON.parse(e.newValue)); } catch (ex) {}
+            }
+        });
+        
+        const TEXTILE_ICONS = [
+            // Clothing
+            'fa-tshirt', 'fa-vest', 'fa-vest-patches', 'fa-shirt', 'fa-user-tie',
+            'fa-socks', 'fa-shoe-prints', 'fa-hat-cowboy', 'fa-hat-wizard',
+            'fa-graduation-cap', 'fa-mitten', 'fa-mask', 'fa-glasses',
+            
+            // Accessories
+            'fa-ring', 'fa-gem', 'fa-crown', 'fa-watch', 'fa-bag-shopping',
+            
+            // Textile Tools
+            'fa-scissors', 'fa-tape', 'fa-ruler', 'fa-ruler-combined', 'fa-ruler-horizontal',
+            'fa-ruler-vertical', 'fa-cut', 'fa-plus', 'fa-compress',
+            
+            // Art & Design
+            'fa-palette', 'fa-spray-can', 'fa-brush', 'fa-paint-roller', 'fa-fill-drip',
+            'fa-paintbrush', 'fa-pen-nib', 'fa-pencil', 'fa-pen',
+            
+            // Fabric & Materials
+            'fa-layer-group', 'fa-swatchbook', 'fa-scroll', 'fa-file', 'fa-sheet-plastic',
+            'fa-square', 'fa-circle', 'fa-shapes', 'fa-cube',
+            
+            // Storage & Organization
+            'fa-box', 'fa-boxes-stacked', 'fa-box-open', 'fa-archive', 'fa-warehouse',
+            'fa-store', 'fa-shop', 'fa-building', 'fa-basket-shopping',
+            
+            // Tags & Labels
+            'fa-tag', 'fa-tags', 'fa-barcode', 'fa-qrcode', 'fa-receipt',
+            'fa-file-invoice', 'fa-bookmark', 'fa-certificate',
+            
+            // Equipment
+            'fa-cart-shopping', 'fa-cart-flatbed', 'fa-dolly', 'fa-truck',
+            'fa-box-archive', 'fa-people-carry-box', 'fa-hand-holding-box',
+            
+            // Thread & Sewing
+            'fa-circle-dot', 'fa-circle-notch', 'fa-spinner', 'fa-gear', 
+            'fa-bezier-curve', 'fa-diagram-project',
+            
+            // Measurements
+            'fa-weight-scale', 'fa-balance-scale', 'fa-calculator', 'fa-percent',
+            
+            // Quality & Premium
+            'fa-star', 'fa-award', 'fa-medal', 'fa-trophy', 'fa-shield-halved',
+            
+            // Additional
+            'fa-bolt', 'fa-fire', 'fa-leaf', 'fa-sun', 'fa-moon',
+            'fa-snowflake', 'fa-droplet', 'fa-wind', 'fa-feather'
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
+            await loadCompanySettings();
+            checkAuth();
+            setView(currentView);
+            initIconGrids();
+            loadInvCustomize();
+            checkPWA();
+            setupNetworkStatus();
+            setupLiveClock();
+        });
+
+        // Theme
+        // ===== Theme / Customize system (mirrors ERP hub — shared localStorage keys) =====
+        let themeMode = localStorage.getItem('flowtive_theme_mode') || (localStorage.getItem('flowtive_theme') || 'light');
+        let accentName = localStorage.getItem('flowtive_accent') || 'emerald';
+        let densityName = localStorage.getItem('flowtive_density') || 'comfortable';
+
+        function applyTheme() {
+            let dark = themeMode === 'dark';
+            if (themeMode === 'system') dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.classList.toggle('dark', dark);
+        }
+        function initTheme() {
+            document.body.setAttribute('data-accent', accentName);
+            document.body.setAttribute('data-density', densityName);
+            applyTheme();
+            syncCustomizeUI();
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (themeMode === 'system') applyTheme();
+            });
+        }
+        function toggleTheme() {
+            themeMode = document.body.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem('flowtive_theme_mode', themeMode);
+            localStorage.setItem('flowtive_theme', themeMode); // backwards compat
+            applyTheme(); syncCustomizeUI();
+        }
+        function setThemeMode(mode) {
+            themeMode = mode;
+            localStorage.setItem('flowtive_theme_mode', mode);
+            applyTheme(); syncCustomizeUI();
+        }
+        function setAccent(name) {
+            accentName = name;
+            localStorage.setItem('flowtive_accent', name);
+            document.body.setAttribute('data-accent', name);
+            syncCustomizeUI();
+        }
+        function setDensity(name) {
+            densityName = name;
+            localStorage.setItem('flowtive_density', name);
+            document.body.setAttribute('data-density', name);
+            syncCustomizeUI();
+        }
+        function syncCustomizeUI() {
+            document.querySelectorAll('#invCustTheme [data-theme]').forEach(b => b.classList.toggle('active', b.dataset.theme === themeMode));
+            document.querySelectorAll('#invCustColor [data-accent]').forEach(b => b.classList.toggle('active', b.dataset.accent === accentName));
+            document.querySelectorAll('#invCustDensity [data-density]').forEach(b => b.classList.toggle('active', b.dataset.density === densityName));
+        }
+        function openCustomize() {
+            document.getElementById('invCustOverlay').classList.add('active');
+            document.getElementById('invCustPanel').classList.add('active');
+            loadInvCustomize(); // Sync checkboxes when panel opens
+        }
+        function closeCustomize() {
+            document.getElementById('invCustOverlay').classList.remove('active');
+            document.getElementById('invCustPanel').classList.remove('active');
+        }
+        function resetCustomize() {
+            setThemeMode('light'); setAccent('emerald'); setDensity('comfortable');
+            showToast('Reset to defaults', 'success');
+        }
+
+        // Auth - Using consistent localStorage keys
+        function checkAuth() {
+            const user = localStorage.getItem('flowtive_user');
+            
+            if (!user || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(user);
+            
+            // Check module access
+            let modules = currentUser.modules || ['erp', 'pos', 'inventory'];
+            if (typeof modules === 'string') {
+                try { modules = JSON.parse(modules); } catch(e) { modules = ['erp', 'pos', 'inventory']; }
+            }
+            
+            const hasAccess = currentUser.role === 'Super Admin' || modules.includes('inventory');
+            if (!hasAccess) {
+                showToast('Access denied to Inventory module', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
+            
+            const displayName = currentUser.full_name || currentUser.name || currentUser.username;
+            document.getElementById('headerUserName').textContent = displayName;
+            document.getElementById('dropdownUserName').textContent = displayName;
+            document.getElementById('dropdownUserRole').textContent = currentUser.role || 'User';
+            document.getElementById('settingsName').value = currentUser.full_name || currentUser.name || '';
+            document.getElementById('settingsEmail').value = currentUser.email || '';
+            document.getElementById('settingsPhone').value = currentUser.phone || currentUser.mobile || '';
+            
+            updateModuleSwitcher(modules);
+            loadData();
+        }
+
+        function updateModuleSwitcher(modules) {
+            if (!modules || modules.length === 0) {
+                const moduleButtonContainer = document.querySelector('.module-dropdown');
+                if (moduleButtonContainer) {
+                    moduleButtonContainer.style.display = 'none';
+                }
+                return;
+            }
+            
+            if (typeof modules === 'string') {
+                try {
+                    modules = JSON.parse(modules);
+                } catch (e) {
+                    modules = modules.split(',').map(m => m.trim().toLowerCase());
+                }
+            }
+            if (!Array.isArray(modules)) {
+                modules = [modules];
+            }
+            modules = modules.map(m => String(m).toLowerCase().trim());
+            
+            const dropdown = document.getElementById('moduleDropdown');
+            const dropdownContainer = document.querySelector('.module-dropdown');
+            
+            const moduleMap = {
+                'pos': { name: 'POS', url: 'pos.html', icon: 'fa-cash-register' },
+                'inventory': { name: 'Inventory', url: 'inventory.html', icon: 'fa-boxes' },
+                'erp': { name: 'ERP Hub', url: 'erp-hub.html', icon: 'fa-chart-line' }
+            };
+            
+            const currentPage = window.location.pathname.split('/').pop();
+            let accessibleModules = [];
+            
+            modules.forEach(mod => {
+                const moduleConfig = moduleMap[mod];
+                if (moduleConfig && moduleConfig.url !== currentPage) {
+                    accessibleModules.push(moduleConfig);
+                }
+            });
+            
+            if (dropdownContainer) {
+                dropdownContainer.style.display = accessibleModules.length > 0 ? 'flex' : 'none';
+            }
+            
+            if (dropdown && accessibleModules.length > 0) {
+                dropdown.innerHTML = accessibleModules.map(module => `
+                    <a href="${module.url}" class="flex items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                        <i class="fas ${module.icon} w-5 mr-3 text-neutral-500"></i>${module.name}
+                    </a>
+                `).join('');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('flowtive_user');
+            localStorage.removeItem('flowtive_token');
+            window.location.href = 'login.html';
+        }
+
+        // Network status
+        function setupNetworkStatus() {
+            const updateStatus = () => {
+                const statusDot = document.getElementById('networkStatusDot');
+                const networkText = document.getElementById('networkText');
+                if (navigator.onLine) {
+                    statusDot.classList.remove('status-offline');
+                    statusDot.classList.add('status-online');
+                    networkText.textContent = 'Online';
+                } else {
+                    statusDot.classList.remove('status-online');
+                    statusDot.classList.add('status-offline');
+                    networkText.textContent = 'Offline';
+                }
+            };
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+        
+        // Live Clock
+        function setupLiveClock() {
+            const clockElement = document.getElementById('liveClock');
+            function updateClock() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            setInterval(updateClock, 1000);
+            updateClock(); // Initial call
+        }
+
+        // Data Loading
+        async function loadData() {
+            try {
+                const [catRes, unitRes, prodRes] = await Promise.all([
+                    fetch(`${API_BASE}/categories/index.php`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_BASE}/units/index.php`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_BASE}/products/index.php`, { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                
+                const catData = await catRes.json();
+                const unitData = await unitRes.json();
+                const prodData = await prodRes.json();
+                
+                if (catData.success) categories = catData.categories || catData.data || [];
+                if (unitData.success) units = unitData.units || unitData.data || [];
+                if (prodData.success) products = prodData.products || prodData.data || [];
+                
+                renderCategories();
+                renderUnits();
+                renderProducts();
+                renderLowStock();
+                updateStats();
+                populateFilters();
+            } catch (error) {
+                console.error('Load error:', error);
+                showToast('Failed to load data', 'error');
+            }
+        }
+
+        // Stats
+        function updateStats() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const filtered = categoryFilter ? products.filter(p => p.category_id == categoryFilter) : products;
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            const getStock = p => parseInt(p.stock_quantity || p.current_stock || 0);
+
+            const lowStockItems = filtered.filter(p => getStock(p) <= (p.low_stock_threshold || p.minimum_stock || 10));
+            const stockValue = filtered.reduce((sum, p) => sum + (parseFloat(p.cost_price || 0) * getStock(p)), 0);
+            const potentialSales = filtered.reduce((sum, p) => sum + (parseFloat(p.selling_price || 0) * getStock(p)), 0);
+            const stockCount = filtered.reduce((sum, p) => sum + getStock(p), 0);
+
+            set('stockValue', `${CURRENCY} ${stockValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`);
+            set('potentialSales', `${CURRENCY} ${potentialSales.toLocaleString(undefined, { maximumFractionDigits: 0 })}`);
+            set('stockCount', stockCount.toLocaleString());
+            set('lowStockCount', lowStockItems.length);
+
+            // Tab count pills
+            set('tabCountProducts', filtered.length);
+            set('tabCountCategories', (typeof categories !== 'undefined' ? categories.length : 0));
+            set('tabCountUnits', (typeof units !== 'undefined' ? units.length : 0));
+            set('tabCountLowStock', lowStockItems.length);
+        }
+
+        // Populate Selects
+        function populateFilters() {
+            const categoryOptions = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const unitOptions = units.map(u => `<option value="${u.id}">${u.name} (${u.abbreviation})</option>`).join('');
+
+            document.getElementById('productCategory').innerHTML = '<option value="">Select...</option>' + categoryOptions;
+            document.getElementById('productUnit').innerHTML = '<option value="">Select...</option>' + unitOptions;
+            document.getElementById('editProductCategory').innerHTML = '<option value="">Select...</option>' + categoryOptions;
+            document.getElementById('editProductUnit').innerHTML = '<option value="">Select...</option>' + unitOptions;
+            document.getElementById('categoryFilter').innerHTML = '<option value="">All Categories</option>' + categoryOptions;
+        }
+
+        // View Toggle
+        function setView(view) {
+            currentView = view;
+            localStorage.setItem('flowtive_inventory_view', view);
+
+            document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
+            document.getElementById('listViewBtn').classList.toggle('active', view === 'list');
+
+            if (view === 'grid') {
+                document.getElementById('productsGrid').classList.remove('hidden');
+                document.getElementById('productsList').classList.add('hidden');
+            } else {
+                document.getElementById('productsGrid').classList.add('hidden');
+                document.getElementById('productsList').classList.remove('hidden');
+            }
+
+            renderProducts();
+        }
+
+        // Tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.remove('hidden');
+        }
+
+        // Filter Products
+        function filterProducts() {
+            renderProducts();
+            updateStats();
+        }
+
+        // Render Products
+        function renderProducts() {
+            const search = document.getElementById('productSearch').value.toLowerCase();
+            const categoryId = document.getElementById('categoryFilter').value;
+
+            const filtered = products.filter(p => {
+                const matchSearch = p.name.toLowerCase().includes(search);
+                const matchCategory = !categoryId || p.category_id == categoryId;
+                return matchSearch && matchCategory;
+            });
+
+            if (currentView === 'grid') {
+                renderProductsGrid(filtered);
+            } else {
+                renderProductsList(filtered);
+            }
+        }
+
+        function renderProductsGrid(items) {
+            const container = document.getElementById('productsGrid');
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center">
+                        <i class="fas fa-box-open text-4xl text-neutral-300 dark:text-neutral-600 mb-3"></i>
+                        <p class="text-neutral-500">No products found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const prefs = getInvCustomize();
+            const showImages = prefs.showImages ?? true;
+            const showStock = prefs.showStock ?? true;
+            const showColorMeta = prefs.showColorMeta ?? true;
+            const highlightLow = prefs.highlightLow ?? true;
+
+            container.innerHTML = items.map(p => {
+                const stock = p.stock_quantity || p.current_stock || 0;
+                const threshold = p.low_stock_threshold || p.minimum_stock || 10;
+                const isLow = stock <= threshold;
+                const stockPercent = Math.min(100, (stock / (threshold * 3 || 30)) * 100);
+                const category = categories.find(c => c.id == p.category_id);
+                const hasImage = p.image || p.image_url;
+                const colorMeta = [p.description_color || p.color, p.description_size || p.measurement].filter(Boolean).join(' · ');
+
+                const imageContent = !showImages
+                    ? `<i class="fas fa-box text-3xl text-neutral-300 dark:text-neutral-600"></i>`
+                    : hasImage
+                        ? `<img src="${p.image || p.image_url}" class="w-full h-full object-cover" alt="${p.name}">`
+                        : `<i class="fas fa-box text-3xl text-neutral-300 dark:text-neutral-600"></i>`;
+
+                return `
+                    <div class="product-card p-4 ${highlightLow && isLow ? 'border-red-300 dark:border-red-700' : ''}">
+                        <div class="aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                            ${imageContent}
+                        </div>
+                        <h3 class="font-medium text-neutral-900 dark:text-neutral-100 truncate text-sm leading-tight">${p.name}</h3>
+                        ${showColorMeta && colorMeta ? `<p class="text-xs truncate mt-0.5 font-medium" style="color:#059669">${colorMeta}</p>` : ''}
+                        <p class="text-xs text-neutral-500 truncate">${category?.name || 'Uncategorized'}</p>
+                        ${p.description ? `<p class="text-xs text-neutral-400 truncate mt-0.5">${p.description}</p>` : ''}
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">${CURRENCY} ${parseFloat(p.selling_price).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                            ${showStock ? `<span class="text-xs ${highlightLow && isLow ? 'text-red-500 font-medium' : 'text-neutral-500'}">${stock} in stock</span>` : ''}
+                        </div>
+                        ${showStock ? `<div class="stock-bar mt-2"><div class="stock-bar-fill ${highlightLow && isLow ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${stockPercent}%"></div></div>` : ''}
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="openEditProduct(${p.id});openModal('editProductModal')" class="flex-1 px-2 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                                <i class="fas fa-pen mr-1"></i>Edit
+                            </button>
+                            <button onclick="openModal('stockModal'); openStockModal(${p.id})" class="flex-1 px-2 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                                <i class="fas fa-boxes mr-1"></i>Stock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProductsList(items) {
+            const tbody = document.getElementById('productsListBody');
+            if (items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-12 text-center">
+                            <i class="fas fa-box-open text-4xl text-neutral-300 dark:text-neutral-600 mb-3"></i>
+                            <p class="text-neutral-500">No products found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const prefs = getInvCustomize();
+            const showImages = prefs.showImages ?? true;
+            const showColorMeta = prefs.showColorMeta ?? true;
+            const highlightLow = prefs.highlightLow ?? true;
+
+            tbody.innerHTML = items.map(p => {
+                const stock = p.stock_quantity || p.current_stock || 0;
+                const threshold = p.low_stock_threshold || p.minimum_stock || 10;
+                const isLow = stock <= threshold;
+                const category = categories.find(c => c.id == p.category_id);
+                const hasImage = p.image || p.image_url;
+                const colorMeta = [p.description_color || p.color, p.description_size || p.measurement].filter(Boolean).join(' · ');
+                const imageContent = !showImages
+                    ? `<i class="fas fa-box text-neutral-400"></i>`
+                    : hasImage
+                        ? `<img src="${p.image || p.image_url}" class="w-full h-full object-cover" alt="">`
+                        : `<i class="fas fa-box text-neutral-400"></i>`;
+
+                return `
+                    <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${highlightLow && isLow ? 'bg-red-50/30 dark:bg-red-900/10' : ''}">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    ${imageContent}
+                                </div>
+                                <div>
+                                    <p class="font-medium text-neutral-900 dark:text-neutral-100 text-sm">${p.name}</p>
+                                    ${showColorMeta && colorMeta ? `<p class="text-xs font-medium" style="color:#059669">${colorMeta}</p>` : ''}
+                                    ${p.description ? `<p class="text-xs text-neutral-500">${p.description}</p>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">${category?.name || '-'}</td>
+                        <td class="px-4 py-3 text-right text-sm text-neutral-600 dark:text-neutral-400">${CURRENCY} ${parseFloat(p.cost_price||0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                        <td class="px-4 py-3 text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">${CURRENCY} ${parseFloat(p.selling_price||0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                        <td class="px-4 py-3 text-right text-sm text-neutral-600 dark:text-neutral-400">${(p.min_price||p.minimum_price) ? `${CURRENCY} ${parseFloat(p.min_price||p.minimum_price).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '-'}</td>
+                        <td class="px-4 py-3 text-right">
+                            <span class="text-sm ${highlightLow && isLow ? 'text-red-500 font-medium' : 'text-neutral-600 dark:text-neutral-400'}">${stock}</span>
+                            ${highlightLow && isLow ? `<span class="text-xs text-red-400 block">Low</span>` : ''}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="openEditProduct(${p.id});openModal('editProductModal')" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="openModal('stockModal'); openStockModal(${p.id})" class="w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                    <i class="fas fa-boxes text-xs"></i>
+                                </button>
+                                <button onclick="deleteProduct(${p.id})" class="w-8 h-8 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderLowStock() {
+            const container = document.getElementById('lowStockList');
+            const lowStockItems = products.filter(p => {
+                const stock = p.stock_quantity || p.current_stock || 0;
+                const threshold = p.low_stock_threshold || p.minimum_stock || 10;
+                return stock <= threshold;
+            });
+            
+            if (lowStockItems.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center">
+                        <i class="fas fa-check-circle text-4xl text-emerald-400 mb-3"></i>
+                        <p class="text-neutral-600 dark:text-neutral-400">All products are well stocked!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = lowStockItems.map(p => {
+                const category = categories.find(c => c.id == p.category_id);
+                const stock = p.stock_quantity || p.current_stock || 0;
+                const threshold = p.low_stock_threshold || p.minimum_stock || 10;
+                const hasImage = p.image || p.image_url;
+                const imageContent = hasImage 
+                    ? `<img src="${p.image || p.image_url}" class="w-full h-full object-cover" alt="">`
+                    : `<i class="fas fa-box text-neutral-400"></i>`;
+                return `
+                    <div class="flex items-center gap-4 p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                        <div class="w-12 h-12 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            ${imageContent}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-neutral-900 dark:text-neutral-100">${p.name}</p>
+                            <p class="text-sm text-neutral-500">${category?.name || 'Uncategorized'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-red-500 font-semibold">${stock} left</p>
+                            <p class="text-xs text-neutral-500">Min: ${threshold}</p>
+                        </div>
+                        <button onclick="openModal('stockModal'); openStockModal(${p.id})" class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600">
+                            Restock
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Categories
+        function renderCategories() {
+            const container = document.getElementById('categoriesGrid');
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center">
+                        <i class="fas fa-folder-open text-4xl text-neutral-300 dark:text-neutral-600 mb-3"></i>
+                        <p class="text-neutral-500">No categories yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = categories.map(c => `
+                <div class="card p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: ${c.color || '#f59e0b'}20; color: ${c.color || '#f59e0b'}">
+                            <i class="fas ${c.icon || 'fa-folder'}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-neutral-900 dark:text-neutral-100 truncate">${c.name}</h3>
+                            <p class="text-sm text-neutral-500">${products.filter(p => p.category_id == c.id).length} products</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openModal('editCategoryModal'); openEditCategory(${c.id})" class="flex-1 px-3 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                            <i class="fas fa-pen mr-1"></i>Edit
+                        </button>
+                        <button onclick="deleteCategory(${c.id})" class="px-3 py-1.5 text-sm border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            if (typeof updateStats === 'function') updateStats();
+        }
+
+        // Render Units
+        function renderUnits() {
+            const container = document.getElementById('unitsGrid');
+            if (units.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center">
+                        <i class="fas fa-ruler text-4xl text-neutral-300 dark:text-neutral-600 mb-3"></i>
+                        <p class="text-neutral-500">No units yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = units.map(u => `
+                <div class="card p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                            <span class="font-bold text-neutral-600 dark:text-neutral-400 text-sm">${u.abbreviation}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-neutral-900 dark:text-neutral-100 truncate">${u.name}</h3>
+                            <p class="text-sm text-neutral-500">${u.abbreviation}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openModal('editUnitModal'); openEditUnit(${u.id})" class="flex-1 px-3 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                            <i class="fas fa-pen mr-1"></i>Edit
+                        </button>
+                        <button onclick="deleteUnit(${u.id})" class="px-3 py-1.5 text-sm border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            if (typeof updateStats === 'function') updateStats();
+        }
+
+        function initIconGrids() {
+            const html = TEXTILE_ICONS.map(icon => `
+                <div class="icon-item" data-icon="${icon}" onclick="selectIcon(this, 'categoryIcon')">
+                    <i class="fas ${icon}"></i>
+                </div>
+            `).join('');
+
+            document.getElementById('categoryIconGrid').innerHTML = html;
+            document.getElementById('editCategoryIconGrid').innerHTML = html.replace(/categoryIcon/g, 'editCategoryIcon');
+
+            // Select default
+            document.querySelector('#categoryIconGrid [data-icon="fa-tshirt"]')?.classList.add('selected');
+        }
+
+        function selectIcon(el, inputId) {
+            const grid = el.closest('.icon-grid');
+            grid.querySelectorAll('.icon-item').forEach(item => item.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById(inputId).value = el.dataset.icon;
+        }
+
+        function handleImageUpload(input, previewId, dataId) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Image must be less than 2MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById(previewId);
+                if (!preview) {
+                    console.error('Preview element not found:', previewId);
+                    showToast('Preview element not found', 'error');
+                    return;
+                }
+                
+                const imageData = e.target.result;
+                preview.innerHTML = `<img src="${imageData}" class="w-full h-32 object-cover rounded-lg" alt="Product image">`;
+                
+                const dataInput = document.getElementById(dataId);
+                if (dataInput) {
+                    dataInput.value = imageData;
+                } else {
+                    console.error('Data input element not found:', dataId);
+                }
+                
+                try {
+                    const imageUploadContainer = input.closest('.image-upload');
+                    if (imageUploadContainer && imageUploadContainer.classList) {
+                        imageUploadContainer.classList.add('has-image');
+                    }
+                } catch (err) {
+                    console.warn('Could not add has-image class:', err);
+                }
+            };
+            reader.onerror = () => {
+                showToast('Error reading image file', 'error');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== Multi-unit of sale UI =====
+        function toggleMultiUnit(mode) {
+            const on = document.getElementById(`${mode}MultiUnitToggle`).checked;
+            const section = document.getElementById(`${mode}MultiUnitSection`);
+            section.classList.toggle('hidden', !on);
+            const rows = document.getElementById(`${mode}UnitRows`);
+            if (on && rows.children.length === 0) {
+                // Seed with a base unit row + one package row
+                addUnitRow(mode, { unit_label: 'piece', conversion_to_base: 1, is_base: 1, is_default: 1 });
+                addUnitRow(mode, {});
+            }
+        }
+
+        function addUnitRow(mode, data = {}) {
+            const rows = document.getElementById(`${mode}UnitRows`);
+            const isBase = !!data.is_base || rows.children.length === 0;
+            const idx = rows.children.length;
+            const row = document.createElement('div');
+            row.className = 'unit-row grid grid-cols-12 gap-2 items-end p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/60';
+            row.dataset.base = isBase ? '1' : '0';
+            row.innerHTML = `
+                <div class="col-span-12 sm:col-span-3">
+                    <label class="block text-xs text-neutral-500 mb-1">${isBase ? 'Base unit' : 'Unit name'}</label>
+                    <input type="text" class="input-field unit-label" value="${data.unit_label || ''}" placeholder="${isBase ? 'metre' : 'roll'}">
+                </div>
+                <div class="col-span-6 sm:col-span-2">
+                    <label class="block text-xs text-neutral-500 mb-1">= base units</label>
+                    <input type="number" min="0" step="any" class="input-field unit-conv" value="${data.conversion_to_base ?? (isBase ? 1 : '')}" ${isBase ? 'readonly' : ''} placeholder="100">
+                </div>
+                <div class="col-span-6 sm:col-span-2">
+                    <label class="block text-xs text-neutral-500 mb-1">Sell price</label>
+                    <input type="number" min="0" step="any" class="input-field unit-price" value="${data.selling_price ?? ''}" placeholder="0">
+                </div>
+                <div class="col-span-6 sm:col-span-2">
+                    <label class="block text-xs text-neutral-500 mb-1">Min price</label>
+                    <input type="number" min="0" step="any" class="input-field unit-min" value="${data.minimum_price ?? ''}" placeholder="0">
+                </div>
+                <div class="col-span-5 sm:col-span-2 flex flex-col gap-1">
+                    <label class="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-400">
+                        <input type="radio" name="${mode}DefaultUnit" class="unit-default" ${data.is_default ? 'checked' : ''}> Default
+                    </label>
+                    <label class="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-400">
+                        <input type="checkbox" class="unit-custom" ${data.allow_custom_length ? 'checked' : ''}> Custom length
+                    </label>
+                </div>
+                <div class="col-span-1 flex justify-end">
+                    ${isBase ? '<span class="text-xs text-neutral-400">base</span>' : '<button type="button" class="text-red-500 hover:text-red-600" onclick="this.closest(\'.unit-row\').remove()"><i class="fas fa-trash"></i></button>'}
+                </div>`;
+            rows.appendChild(row);
+        }
+
+        // Collect unit rows into the payload shape expected by the API
+        function collectUnits(mode) {
+            const toggle = document.getElementById(`${mode}MultiUnitToggle`);
+            if (!toggle || !toggle.checked) return null;
+            const rows = [...document.querySelectorAll(`#${mode}UnitRows .unit-row`)];
+            const units = [];
+            let baseLabel = null;
+            rows.forEach(r => {
+                const label = r.querySelector('.unit-label').value.trim();
+                if (!label) return;
+                const isBase = r.dataset.base === '1';
+                if (isBase) baseLabel = label;
+                units.push({
+                    unit_label: label,
+                    conversion_to_base: parseFloat(r.querySelector('.unit-conv').value) || (isBase ? 1 : 1),
+                    selling_price: parseFloat(r.querySelector('.unit-price').value) || 0,
+                    minimum_price: parseFloat(r.querySelector('.unit-min').value) || 0,
+                    is_base: isBase ? 1 : 0,
+                    is_default: r.querySelector('.unit-default').checked ? 1 : 0,
+                    allow_custom_length: r.querySelector('.unit-custom').checked ? 1 : 0
+                });
+            });
+            if (units.length === 0) return null;
+            if (!units.some(u => u.is_default)) units[0].is_default = 1;
+            return { units, baseLabel };
+        }
+
+        // Products CRUD
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            
+            const categoryId = document.getElementById('productCategory').value;
+            const unitId = document.getElementById('productUnit').value;
+            
+            if (!categoryId) {
+                showToast('Please select a category', 'warning');
+                return;
+            }
+            
+            if (!unitId) {
+                showToast('Please select a unit', 'warning');
+                return;
+            }
+            
+            const data = {
+                name: document.getElementById('productName').value.trim(),
+                category_id: parseInt(categoryId),
+                unit_id: parseInt(unitId),
+                cost_price: parseFloat(document.getElementById('productCost').value) || 0,
+                selling_price: parseFloat(document.getElementById('productPrice').value) || 0,
+                min_price: document.getElementById('productMinPrice').value ? parseFloat(document.getElementById('productMinPrice').value) : 0,
+                stock_quantity: parseInt(document.getElementById('productStock').value) || 0,
+                low_stock_threshold: parseInt(document.getElementById('productLowStock').value) || 10,
+                description: document.getElementById('productDescription').value.trim(),
+                color: document.getElementById('productColor').value.trim() || null,
+                measurement: document.getElementById('productMeasurement').value.trim() || null,
+                image: document.getElementById('productImageData').value || ''
+            };
+
+            const addUnits = collectUnits('add');
+            if (addUnits) {
+                data.units_of_sale = addUnits.units;
+                data.has_multi_unit = 1;
+                data.base_unit_label = addUnits.baseLabel;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/products/index.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Product added successfully', 'success');
+                    closeModal('addProductModal');
+                    document.getElementById('addProductForm').reset();
+                    document.getElementById('addUnitRows').innerHTML = '';
+                    document.getElementById('addMultiUnitSection').classList.add('hidden');
+                    
+                    const previewEl = document.getElementById('productImagePreview');
+                    if (previewEl) {
+                        previewEl.innerHTML = `
+                            <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                            <p class="text-sm text-neutral-500">Click to upload image</p>
+                            <p class="text-xs text-neutral-400">PNG, JPG up to 2MB</p>
+                        `;
+                    }
+                    
+                    const uploadEl = document.getElementById('productImageUpload');
+                    if (uploadEl && uploadEl.classList) {
+                        uploadEl.classList.remove('has-image');
+                    }
+                    
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to add product', 'error');
+                }
+            } catch (error) {
+                console.error('Add product error:', error);
+                showToast('Error adding product', 'error');
+            }
+        }
+
+        function openEditProduct(id) {
+            const product = products.find(p => p.id == id);
+            if (!product) return;
+            
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductCategory').value = product.category_id;
+            document.getElementById('editProductUnit').value = product.unit_id;
+            document.getElementById('editProductCost').value = product.cost_price;
+            document.getElementById('editProductPrice').value = product.selling_price;
+            // </CHANGE> Fixed min price field to check multiple field names and ensure value is visible
+            const minPriceValue = product.minimum_price || product.min_price || product.minimum_selling_price || '';
+            document.getElementById('editProductMinPrice').value = minPriceValue;
+            document.getElementById('editProductStock').value = product.stock_quantity || product.current_stock || 0;
+            document.getElementById('editProductLowStock').value = product.low_stock_threshold || product.minimum_stock || 10;
+            document.getElementById('editProductDescription').value = product.description || '';
+            // API returns description_color / description_size; also accept legacy color / measurement
+            document.getElementById('editProductColor').value = product.description_color || product.color || '';
+            document.getElementById('editProductMeasurement').value = product.description_size || product.measurement || '';
+
+            // Populate multi-unit section
+            const editToggle = document.getElementById('editMultiUnitToggle');
+            const editRows = document.getElementById('editUnitRows');
+            editRows.innerHTML = '';
+            const units = product.units_of_sale || [];
+            if (units.length > 0 || Number(product.has_multi_unit) === 1) {
+                editToggle.checked = true;
+                document.getElementById('editMultiUnitSection').classList.remove('hidden');
+                if (units.length > 0) {
+                    // Ensure base unit (or first) is rendered first
+                    const sorted = [...units].sort((a, b) => (Number(b.is_base) - Number(a.is_base)) || (a.sort_order - b.sort_order));
+                    sorted.forEach(u => addUnitRow('edit', u));
+                } else {
+                    addUnitRow('edit', { unit_label: product.base_unit_label || 'piece', conversion_to_base: 1, is_base: 1, is_default: 1 });
+                    addUnitRow('edit', {});
+                }
+            } else {
+                editToggle.checked = false;
+                document.getElementById('editMultiUnitSection').classList.add('hidden');
+            }
+            
+            const imagePreviewEl = document.getElementById('editProductImagePreview');
+            const imageDataEl = document.getElementById('editProductImageData');
+            const imageUploadEl = document.getElementById('productImageUpload'); // Corrected ID here
+            
+            if (product.image_url || product.image) {
+                if (imagePreviewEl) {
+                    imagePreviewEl.innerHTML = `<img src="${product.image_url || product.image}" class="w-full h-32 object-cover rounded-lg">`;
+                }
+                if (imageDataEl) {
+                    imageDataEl.value = product.image_url || product.image;
+                }
+                if (imageUploadEl) {
+                    imageUploadEl.classList.add('has-image');
+                }
+            } else {
+                if (imagePreviewEl) {
+                    imagePreviewEl.innerHTML = `
+                        <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                        <p class="text-sm text-neutral-500">Click to upload image</p>
+                    `;
+                }
+                if (imageDataEl) {
+                    imageDataEl.value = '';
+                }
+                if (imageUploadEl) {
+                    imageUploadEl.classList.remove('has-image');
+                }
+            }
+            // Note: callers are responsible for calling openModal('editProductModal')
+            // after this function so fields are populated before the modal becomes visible.
+        }
+
+        async function handleEditProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editProductId').value;
+            
+            if (!id) {
+                showToast('Product ID is required', 'error');
+                return;
+            }
+            
+            const categoryId = document.getElementById('editProductCategory').value;
+            const unitId = document.getElementById('editProductUnit').value;
+            
+            if (!categoryId) {
+                showToast('Please select a category', 'warning');
+                return;
+            }
+            
+            if (!unitId) {
+                showToast('Please select a unit', 'warning');
+                return;
+            }
+            
+            const minPriceEl = document.getElementById('editProductMinPrice');
+            const minPriceValue = minPriceEl && minPriceEl.value ? parseFloat(minPriceEl.value) : 0;
+            
+            const data = {
+                id: parseInt(id),
+                name: document.getElementById('editProductName').value.trim(),
+                category_id: parseInt(categoryId),
+                unit_id: parseInt(unitId),
+                cost_price: parseFloat(document.getElementById('editProductCost').value) || 0,
+                selling_price: parseFloat(document.getElementById('editProductPrice').value) || 0,
+                minimum_price: minPriceValue,
+                current_stock: parseInt(document.getElementById('editProductStock').value) || 0,
+                minimum_stock: parseInt(document.getElementById('editProductLowStock').value) || 10,
+                description: document.getElementById('editProductDescription').value.trim(),
+                color: document.getElementById('editProductColor').value.trim() || null,
+                measurement: document.getElementById('editProductMeasurement').value.trim() || null
+            };
+            
+            const imageDataEl = document.getElementById('editProductImageData');
+            if (imageDataEl && imageDataEl.value) {
+                data.image = imageDataEl.value;
+            }
+
+            const editUnits = collectUnits('edit');
+            if (editUnits) {
+                data.units_of_sale = editUnits.units;
+                data.has_multi_unit = 1;
+                data.base_unit_label = editUnits.baseLabel;
+            } else {
+                // Multi-unit turned off - clear units
+                data.units_of_sale = [];
+                data.has_multi_unit = 0;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/products/index.php`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Product updated successfully', 'success');
+                    closeModal('editProductModal');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to update product', 'error');
+                }
+            } catch (err) {
+                console.error('Edit product error:', err);
+                showToast('Error updating product: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteProduct(id) {
+            const userRole = (currentUser.role || '').toLowerCase().replace(/\s+/g, '_');
+            const allowedRoles = ['super_admin', 'admin', 'inventory_manager'];
+            if (!allowedRoles.includes(userRole)) {
+                showToast('You do not have permission to delete products', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            if (!id) {
+                showToast('Product ID is required', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/products/index.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Product deleted', 'success');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to delete', 'error');
+                }
+            } catch (error) {
+                console.error('Delete product error:', error);
+                showToast('Error deleting product', 'error');
+            }
+        }
+
+        // Stock Modal
+        function openStockModal(id) {
+            const product = products.find(p => p.id == id);
+            if (!product) return;
+            
+            document.getElementById('stockProductId').value = id;
+            document.getElementById('stockProductName').textContent = product.name;
+            document.getElementById('stockCurrentQty').textContent = product.stock_quantity || product.current_stock || 0;
+            document.getElementById('stockAdjustmentQty').value = '';
+            document.getElementById('stockAdjustmentReason').value = '';
+            
+            openModal('stockModal'); // Changed from showModal
+        }
+
+        async function handleStockAdjustment(e) {
+            e.preventDefault();
+            const id = document.getElementById('stockProductId').value;
+            const type = document.getElementById('stockAdjustmentType').value;
+            const qty = parseInt(document.getElementById('stockAdjustmentQty').value);
+            const reason = document.getElementById('stockAdjustmentReason').value.trim() || 'Manual adjustment';
+            const product = products.find(p => p.id == id);
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
+            }
+            
+            let newQty = product.stock_quantity || product.current_stock || 0;
+            if (type === 'add') newQty += qty;
+            else if (type === 'remove') newQty = Math.max(0, newQty - qty);
+            else newQty = qty;
+
+            try {
+                // Use stock movement API for proper tracking
+                const res = await fetch(`${API_BASE}/stock/index.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ 
+                        product_id: parseInt(id),
+                        quantity: newQty,
+                        type: 'adjustment',
+                        reason: reason,
+                        user_id: currentUser.id
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Stock updated successfully', 'success');
+                    closeModal('stockModal');
+                    await loadData(); // Use await for consistency
+                } else {
+                    showToast(result.message || 'Failed to update stock', 'error');
+                }
+            } catch (error) {
+                console.error('Stock adjustment error:', error);
+                showToast('Error updating stock', 'error');
+            }
+        }
+
+        // Categories CRUD
+        async function handleAddCategory(e) {
+            e.preventDefault();
+            
+            const icon = document.getElementById('categoryIcon').value;
+            
+            if (!icon) {
+                showToast('Please select an icon', 'warning');
+                return;
+            }
+            
+            const data = {
+                name: document.getElementById('categoryName').value.trim(),
+                icon: icon,
+                color: document.getElementById('categoryColor').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/categories/index.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Category added successfully', 'success');
+                    closeModal('addCategoryModal');
+                    document.getElementById('addCategoryForm').reset();
+                    // Reset icon selection visually
+                    document.querySelector('#categoryIconGrid .icon-item.selected')?.classList.remove('selected');
+                    document.querySelector('#categoryIconGrid [data-icon="fa-tshirt"]').classList.add('selected');
+                    document.getElementById('categoryIcon').value = 'fa-tshirt';
+                    await loadData(); // Use await for consistency
+                } else {
+                    showToast(result.message || 'Failed to add category', 'error');
+                }
+            } catch (error) {
+                console.error('Add category error:', error);
+                showToast('Error adding category', 'error');
+            }
+        }
+
+        function openEditCategory(id) {
+            const category = categories.find(c => c.id == id);
+            if (!category) return;
+            
+            document.getElementById('editCategoryId').value = id;
+            document.getElementById('editCategoryName').value = category.name;
+            document.getElementById('editCategoryColor').value = category.color || '#f59e0b';
+            document.getElementById('editCategoryIcon').value = category.icon || 'fa-tshirt';
+            
+            // Select the icon
+            document.querySelectorAll('#editCategoryIconGrid .icon-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.icon === (category.icon || 'fa-tshirt'));
+            });
+            
+            openModal('editCategoryModal'); // Changed from showModal
+        }
+
+        async function handleEditCategory(e) {
+            e.preventDefault();
+            const id = document.getElementById('editCategoryId').value;
+            
+            if (!id) {
+                showToast('Category ID is required', 'error');
+                return;
+            }
+            
+            const data = {
+                id: parseInt(id),
+                name: document.getElementById('editCategoryName').value.trim(),
+                icon: document.getElementById('editCategoryIcon').value || 'fa-tshirt',
+                description: document.getElementById('editCategoryDescription').value.trim() // Added description
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/categories/index.php`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Category updated successfully', 'success');
+                    closeModal('editCategoryModal');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to update category', 'error');
+                }
+            } catch (error) {
+                console.error('Edit category error:', error);
+                showToast('Error updating category', 'error');
+            }
+        }
+
+        async function deleteCategory(id) {
+            const userRole = (currentUser.role || '').toLowerCase().replace(/\s+/g, '_');
+            const allowedRoles = ['super_admin', 'admin', 'inventory_manager'];
+            if (!allowedRoles.includes(userRole)) {
+                showToast('You do not have permission to delete categories', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this category?')) return;
+            
+            if (!id) {
+                showToast('Category ID is required', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/categories/index.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Category deleted', 'success');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to delete', 'error');
+                }
+            } catch (error) {
+                console.error('Delete category error:', error);
+                showToast('Error deleting category', 'error');
+            }
+        }
+
+        // Units CRUD
+        async function handleAddUnit(e) {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('unitName').value.trim(),
+                abbreviation: document.getElementById('unitAbbreviation').value.trim()
+            };
+            
+            if (!data.name || !data.abbreviation) {
+                showToast('Please fill in all required fields', 'warning');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/units/index.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Unit added successfully', 'success');
+                    closeModal('addUnitModal');
+                    document.getElementById('addUnitForm').reset();
+                    await loadData(); // Use await for consistency
+                } else {
+                    showToast(result.message || 'Failed to add unit', 'error');
+                }
+            } catch (error) {
+                console.error('Add unit error:', error);
+                showToast('Error adding unit', 'error');
+            }
+        }
+
+        function openEditUnit(id) {
+            const unit = units.find(u => u.id == id);
+            if (!unit) return;
+            
+            document.getElementById('editUnitId').value = id;
+            document.getElementById('editUnitName').value = unit.name;
+            document.getElementById('editUnitAbbreviation').value = unit.abbreviation;
+            // Added placeholder values for new fields
+            document.getElementById('editUnitSymbol').value = unit.symbol || '';
+            document.getElementById('editUnitType').value = unit.type || '';
+            document.getElementById('editUnitDescription').value = unit.description || '';
+            
+            openModal('editUnitModal'); // Changed from showModal
+        }
+
+        async function handleEditUnit(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUnitId').value;
+            
+            if (!id) {
+                showToast('Unit ID is required', 'error');
+                return;
+            }
+            
+            const data = {
+                id: parseInt(id),
+                name: document.getElementById('editUnitName').value.trim(),
+                abbreviation: document.getElementById('editUnitAbbreviation').value.trim(), // Changed from 'abbreviation' to 'symbol' for clarity if intended
+                symbol: document.getElementById('editUnitSymbol').value.trim(), // Added symbol
+                type: document.getElementById('editUnitType').value.trim(), // Added type
+                description: document.getElementById('editUnitDescription').value.trim() // Added description
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/units/index.php`, { // Removed ID from URL, sending in body
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Unit updated successfully', 'success');
+                    closeModal('editUnitModal');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to update unit', 'error');
+                }
+            } catch (error) {
+                console.error('Edit unit error:', error);
+                showToast('Error updating unit', 'error');
+            }
+        }
+
+        async function deleteUnit(id) {
+            const userRole = (currentUser.role || '').toLowerCase().replace(/\s+/g, '_');
+            const allowedRoles = ['super_admin', 'admin', 'inventory_manager'];
+            if (!allowedRoles.includes(userRole)) {
+                showToast('You do not have permission to delete units', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this unit?')) return;
+            
+            if (!id) {
+                showToast('Unit ID is required', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/units/index.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Unit deleted', 'success');
+                    await loadData();
+                } else {
+                    showToast(result.message || 'Failed to delete', 'error');
+                }
+            } catch (error) {
+                console.error('Delete unit error:', error);
+                showToast('Error deleting unit', 'error');
+            }
+        }
+
+        // User Settings
+        document.getElementById('userSettingsForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                id: currentUser.id,
+                full_name: document.getElementById('settingsName').value
+            };
+            const newPwd = document.getElementById('settingsNewPassword').value;
+            if (newPwd) data.password = newPwd;
+            
+            try {
+                const res = await fetch(`${API_BASE}/users/index.php`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    currentUser.full_name = data.full_name;
+                    localStorage.setItem('flowtive_user', JSON.stringify(currentUser));
+                    updateUserDisplay();
+                    showToast('Settings saved', 'success');
+                    closeModal('userSettingsModal');
+                } else {
+                    showToast(result.message || 'Failed', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error', 'error');
+            }
+        });
+
+        // Modal helpers
+        function openModal(id) { // Renamed from showModal
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            // Reset specific form elements if needed when closing modals
+            if (id === 'addProductModal') {
+                document.getElementById('addProductForm').reset();
+                document.getElementById('productImagePreview').innerHTML = `
+                    <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                    <p class="text-sm text-neutral-500">Click to upload image</p>
+                    <p class="text-xs text-neutral-400">PNG, JPG up to 2MB</p>
+                `;
+                document.getElementById('productImageUpload').classList.remove('has-image');
+                document.getElementById('productImageData').value = '';
+            } else if (id === 'addCategoryModal') {
+                 document.getElementById('addCategoryForm').reset();
+                 document.querySelector('#categoryIconGrid .icon-item.selected')?.classList.remove('selected');
+                 document.querySelector('#categoryIconGrid [data-icon="fa-tshirt"]').classList.add('selected');
+                 document.getElementById('categoryIcon').value = 'fa-tshirt';
+            } else if (id === 'addUnitModal') {
+                document.getElementById('addUnitForm').reset();
+            } else if (id === 'editProductModal') {
+                // Clear image preview if it exists
+                const preview = document.getElementById('editProductImagePreview');
+                if (preview && preview.querySelector('img')) {
+                    preview.innerHTML = `
+                        <i class="fas fa-cloud-upload-alt text-3xl text-neutral-400 mb-2"></i>
+                        <p class="text-sm text-neutral-500">Click to upload image</p>
+                    `;
+                    document.getElementById('productImageUpload').classList.remove('has-image');
+                    document.getElementById('editProductImageData').value = '';
+                }
+            } else if (id === 'editCategoryModal') {
+                 document.getElementById('editCategoryForm').reset();
+            } else if (id === 'editUnitModal') {
+                document.getElementById('editUnitForm').reset();
+            } else if (id === 'stockModal') {
+                document.getElementById('stockForm').reset();
+            }
+        }
+
+        // Dropdown toggle
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const isActive = dropdown.classList.contains('active');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+            
+            if (!isActive) {
+                dropdown.classList.add('active');
+            }
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative') && !e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = `toast-${Date.now()}`;
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            // Trigger show animation after a short delay
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 50);
+
+            // Remove toast after a few seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => {
+                    toast.remove();
+                });
+            }, 3000);
+        }
+
+        // PWA
+        function checkPWA() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const screenWidth = window.screen.width;
+                if (screenWidth < 1024 && !localStorage.getItem('pwa_dismissed')) {
+                    setTimeout(() => document.getElementById('pwaPrompt').classList.add('show'), 2000);
+                }
+            });
+        }
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    deferredPrompt = null;
+                    document.getElementById('pwaPrompt').classList.remove('show');
+                });
+            }
+        }
+
+        function dismissPWA() {
+            document.getElementById('pwaPrompt').classList.remove('show');
+            localStorage.setItem('pwa_dismissed', 'true');
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+        }
+
+        // ===== Inventory Barcode Scanner =====
+        let invBarcodeTimer = null;
+
+        function openInvBarcodeScanner() {
+            const inp = document.getElementById('invBarcodeInput');
+            if (inp) inp.value = '';
+            const res = document.getElementById('invBarcodeResult');
+            if (res) res.innerHTML = '<i class="fas fa-wifi text-2xl mb-2 block"></i>Waiting for scan input...';
+            openModal('invBarcodeScannerModal');
+            setTimeout(() => inp?.focus(), 200);
+        }
+
+        function onInvBarcodeInput(val) {
+            if (!val) return;
+            clearTimeout(invBarcodeTimer);
+            invBarcodeTimer = setTimeout(() => {
+                const barcode = val.trim().toUpperCase();
+                const match = (products || []).find(p => (p.sku || '').toUpperCase() === barcode || (p.barcode || '').toUpperCase() === barcode || String(p.id) === barcode);
+                const resultEl = document.getElementById('invBarcodeResult');
+                const quickEdit = document.getElementById('invBarcodeQuickEdit')?.checked;
+                if (match) {
+                    const stock = match.stock_quantity ?? match.current_stock ?? 0;
+                    const isLow = stock <= (match.low_stock_threshold ?? match.minimum_stock ?? 10);
+                    const colorMeta = [match.description_color || match.color, match.description_size || match.measurement].filter(Boolean).join(' · ');
+                    if (quickEdit) {
+                        // Auto-open edit modal immediately
+                        closeModal('invBarcodeScannerModal');
+                        setTimeout(() => { openEditProduct(match.id); openModal('editProductModal'); }, 150);
+                        return;
+                    }
+                    resultEl.innerHTML = `<div class="p-3 rounded-xl text-left" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)">
+                        <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${match.name}</p>
+                        ${colorMeta ? `<p class="text-xs font-medium mt-0.5" style="color:#059669">${colorMeta}</p>` : ''}
+                        <p class="text-xs text-neutral-500 mt-0.5">${match.category_name || 'N/A'} &middot; Stock: <span class="${isLow ? 'text-red-500 font-bold' : ''}">${stock}</span> ${isLow ? '<span class="text-red-500">(Low)</span>' : ''}</p>
+                        <p class="text-xs text-neutral-500 mt-0.5">Cost: ${CURRENCY} ${Number(match.cost_price||0).toLocaleString()} &middot; Selling: ${CURRENCY} ${Number(match.selling_price||0).toLocaleString()}</p>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="closeModal('invBarcodeScannerModal');setTimeout(()=>{openEditProduct(${match.id});openModal('editProductModal');},150)" class="flex-1 px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 text-sm rounded-lg font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"><i class="fas fa-pen mr-1"></i>Edit</button>
+                            <button onclick="closeModal('invBarcodeScannerModal');setTimeout(()=>{openModal('stockModal');openStockModal(${match.id});},150)" class="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg font-medium hover:bg-emerald-700"><i class="fas fa-boxes mr-1"></i>Stock</button>
+                        </div>
+                    </div>`;
+                } else {
+                    resultEl.innerHTML = `<div class="p-3 rounded-xl" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)">
+                        <p class="text-sm text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>No product found for: <strong>${barcode}</strong></p>
+                        <p class="text-xs text-neutral-400 mt-1">Check SKU or barcode and try again.</p>
+                        <button onclick="closeModal('invBarcodeScannerModal');setTimeout(()=>openModal('addProductModal'),150)" class="mt-2 w-full px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 text-sm rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"><i class="fas fa-plus mr-1"></i>Add New Product</button>
+                    </div>`;
+                }
+            }, 300);
+        }
+
+        // ===== Inventory Customize =====
+        function saveInvCustomize() {
+            const prefs = {
+                showImages: document.getElementById('invCustomShowImages')?.checked ?? true,
+                showStock: document.getElementById('invCustomShowStock')?.checked ?? true,
+                showCost: document.getElementById('invCustomShowCost')?.checked ?? false,
+                showColorMeta: document.getElementById('invCustomShowColorMeta')?.checked ?? true,
+                highlightLow: document.getElementById('invCustomHighlightLow')?.checked ?? true
+            };
+            localStorage.setItem('inv_customize', JSON.stringify(prefs));
+            showToast('Preferences saved', 'success');
+            renderProducts(); // Re-render to reflect changes immediately
+            syncInvCustViewUI();
+        }
+
+        function syncInvCustViewUI() {
+            const mode = document.querySelector('.view-btn.active')?.id === 'listViewBtn' ? 'list' : 'grid';
+            const vg = document.getElementById('invCustViewGrid'); const vl = document.getElementById('invCustViewList');
+            if (vg) vg.classList.toggle('active', mode === 'grid');
+            if (vl) vl.classList.toggle('active', mode === 'list');
+        }
+
+        function getInvCustomize() {
+            try {
+                return JSON.parse(localStorage.getItem('inv_customize') || 'null') || {};
+            } catch (e) { return {}; }
+        }
+
+        function loadInvCustomize() {
+            try {
+                const stored = getInvCustomize();
+                if (document.getElementById('invCustomShowImages')) document.getElementById('invCustomShowImages').checked = stored.showImages ?? true;
+                if (document.getElementById('invCustomShowStock')) document.getElementById('invCustomShowStock').checked = stored.showStock ?? true;
+                if (document.getElementById('invCustomShowCost')) document.getElementById('invCustomShowCost').checked = stored.showCost ?? false;
+                if (document.getElementById('invCustomShowColorMeta')) document.getElementById('invCustomShowColorMeta').checked = stored.showColorMeta ?? true;
+                if (document.getElementById('invCustomHighlightLow')) document.getElementById('invCustomHighlightLow').checked = stored.highlightLow ?? true;
+                syncCustomizeUI();
+                syncInvCustViewUI();
+            } catch (e) {}
+        }
+
+        function updateUserDisplay() {
+            const displayName = currentUser.full_name || currentUser.name || currentUser.username;
+            document.getElementById('headerUserName').textContent = displayName;
+            document.getElementById('dropdownUserName').textContent = displayName;
+        }
+    </script>
+</body>
+</html>

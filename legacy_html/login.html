@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Flowtive Central ERP - Enterprise Resource Planning System">
+    <title>Flowtive Central - Login</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+                            400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                            800: '#1e40af', 900: '#1e3a8a', 950: '#172554'
+                        },
+                        neutral: {
+                            50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4',
+                            400: '#a3a3a3', 500: '#737373', 600: '#525252', 700: '#404040',
+                            800: '#262626', 900: '#171717', 950: '#0a0a0a'
+                        },
+                        success: { light: '#dcfce7', DEFAULT: '#22c55e', dark: '#15803d' },
+                        warning: { light: '#fef3c7', DEFAULT: '#f59e0b', dark: '#b45309' },
+                        danger: { light: '#fee2e2', DEFAULT: '#ef4444', dark: '#dc2626' },
+                        info: { light: '#dbeafe', DEFAULT: '#3b82f6', dark: '#1d4ed8' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { font-family: 'Inter', system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+            transition: background 0.3s ease;
+        }
+        body.dark { 
+            background: linear-gradient(135deg, #000000 0%, #434343 100%);
+        }
+        
+        .bg-grid {
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .dark .bg-grid {
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+        
+        .glass { 
+            background: rgba(255, 255, 255, 0.9); 
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+        }
+        .dark .glass { 
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        
+        .input-modern {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        .input-modern:focus {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .dark .input-modern {
+            background: rgba(50, 50, 50, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #f1f5f9;
+        }
+        .dark .input-modern:focus {
+            background: rgba(60, 60, 60, 0.9);
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+        }
+        
+        .btn-primary { 
+            background: #4f46e5;
+            color: white;
+            transition: all 0.2s ease; 
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+        }
+        .btn-primary:hover { 
+            background: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        .dark .btn-primary { 
+            background: #6366f1;
+            color: white;
+        }
+        .dark .btn-primary:hover { 
+            background: #818cf8;
+        }
+        
+        .module-card { 
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .module-card:hover { 
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .module-card.selected { 
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.08);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .dark .module-card { 
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(40, 40, 40, 0.6);
+        }
+        .dark .module-card:hover { 
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .dark .module-card.selected { 
+            border-color: #818cf8;
+            background: rgba(99, 102, 241, 0.15);
+        }
+        
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(12px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake { 
+            0%, 100% { transform: translateX(0); } 
+            25% { transform: translateX(-6px); } 
+            75% { transform: translateX(6px); } 
+        }
+        
+        .spinner { 
+            width: 18px; height: 18px; 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-top-color: white; 
+            border-radius: 50%; 
+            animation: spin 0.7s linear infinite; 
+        }
+        .dark .spinner { border-color: rgba(15,23,42,0.3); border-top-color: #0f172a; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-online { background: #22c55e; }
+        .status-offline { background: #ef4444; }
+        
+        .theme-toggle {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #64748b;
+        }
+        .theme-toggle:hover { 
+            background: white;
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        .dark .theme-toggle { 
+            background: rgba(50, 50, 50, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+        }
+        .dark .theme-toggle:hover { 
+            background: rgba(60, 60, 60, 0.9);
+            border-color: #818cf8;
+            color: #818cf8;
+        }
+        
+        .install-prompt { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: white; border: 1px solid #e2e8f0;
+            padding: 16px 20px; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .dark .install-prompt { 
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #334155;
+        }
+        
+        .logo-container {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+        .dark .logo-container {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 bg-grid">
+    <!-- Theme Toggle - Top Right -->
+    <button onclick="toggleTheme()" class="theme-toggle fixed top-4 right-4 z-50">
+        <i class="fas fa-sun dark:hidden"></i>
+        <i class="fas fa-moon hidden dark:block"></i>
+    </button>
+
+    <!-- Network Status -->
+    <div id="networkStatus" class="fixed top-4 left-4 flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-full text-sm font-medium shadow-sm">
+        <span class="status-dot status-online" id="statusDot"></span>
+        <span id="statusText" class="text-slate-600 dark:text-slate-400">Online</span>
+    </div>
+
+    <!-- Install PWA Prompt -->
+    <div id="installPrompt" class="install-prompt hidden">
+        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <i class="fas fa-download text-blue-600 dark:text-blue-400"></i>
+        </div>
+        <div>
+            <p class="font-semibold text-slate-800 dark:text-slate-100">Install Flowtive</p>
+            <p class="text-sm text-slate-500">Add to home screen</p>
+        </div>
+        <button onclick="installPWA()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">Install</button>
+        <button onclick="dismissInstall()" class="p-2 text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="login-container w-full max-w-md">
+        <!-- Logo -->
+        <div class="text-center mb-10">
+            <div class="logo-container inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
+                <i class="fas fa-cube text-2xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Flowtive Central</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Enterprise Resource Planning</p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginSection" class="glass rounded-2xl p-8 fade-in">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Sign in to continue</h2>
+            
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Username</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="username" 
+                            class="input-modern w-full pl-11 pr-4 py-3 rounded-xl focus:outline-none"
+                            placeholder="Enter username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="password" id="password" 
+                            class="input-modern w-full pl-11 pr-12 py-3 rounded-xl focus:outline-none"
+                            placeholder="Enter password" required autocomplete="current-password">
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="remember" class="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500">
+                        <span class="ml-2 text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+                    </label>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMsg" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <button type="submit" id="loginBtn" class="btn-primary w-full py-3 rounded-xl font-semibold flex items-center justify-center">
+                    <span id="loginBtnText">Sign In</span>
+                    <div id="loginSpinner" class="spinner ml-2 hidden"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Module Selection -->
+        <div id="moduleSection" class="glass rounded-2xl p-8 hidden fade-in">
+            <div class="text-center mb-6">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Welcome, <span id="welcomeName"></span></h2>
+                <p class="text-slate-500 text-sm mt-1">Select a module to continue</p>
+            </div>
+
+            <div id="moduleList" class="space-y-3 mb-6"></div>
+
+            <div class="flex gap-3">
+                <button onclick="handleLogout()" class="flex-1 py-3 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+                <button id="continueBtn" onclick="continueToModule()" disabled
+                    class="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-slate-400 text-sm mt-8">&copy; 2026 Flowtive Central. All rights reserved.</p>
+    </div>
+
+    <script>
+        const API_BASE = 'api';
+        let currentUser = null;
+        let selectedModule = null;
+        let deferredPrompt = null;
+
+        const moduleConfig = {
+            erp: { name: 'ERP Hub', icon: 'fas fa-chart-line', desc: 'Dashboard & Reports', page: 'erp-hub.html' },
+            pos: { name: 'Point of Sale', icon: 'fas fa-cash-register', desc: 'Sales & Transactions', page: 'pos.html' },
+            inventory: { name: 'Inventory', icon: 'fas fa-boxes', desc: 'Stock Management', page: 'inventory.html' }
+        };
+
+        // Theme handling
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('flowtive_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // Initialize theme
+        (function() {
+            const savedTheme = localStorage.getItem('flowtive_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark');
+            }
+        })();
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed:', err));
+        }
+
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('pwa_install_dismissed')) {
+                document.getElementById('installPrompt').classList.remove('hidden');
+            }
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').classList.add('hidden');
+                });
+            }
+        }
+
+        function dismissInstall() {
+            document.getElementById('installPrompt').classList.add('hidden');
+            localStorage.setItem('pwa_install_dismissed', 'true');
+        }
+
+        // Network Status
+        function updateNetworkStatus() {
+            const isOnline = navigator.onLine;
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            dot.className = isOnline ? 'status-dot status-online' : 'status-dot status-offline';
+            text.textContent = isOnline ? 'Online' : 'Offline';
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        updateNetworkStatus();
+
+        // Check existing session
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('flowtive_user');
+            const token = localStorage.getItem('flowtive_token');
+            if (user && token) {
+                currentUser = JSON.parse(user);
+                handlePostLogin();
+            }
+            document.getElementById('username').focus();
+        });
+
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            pwd.type = pwd.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            document.getElementById('errorText').textContent = msg;
+            el.classList.remove('hidden');
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 400);
+        }
+
+        function hideError() {
+            document.getElementById('errorMsg').classList.add('hidden');
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+
+            if (!username || !password) {
+                showError('Please enter username and password');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Signing in...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('flowtive_user', JSON.stringify(data.user));
+                    localStorage.setItem('flowtive_token', data.token);
+                    handlePostLogin();
+                } else {
+                    showError(data.message || 'Invalid credentials');
+                }
+            } catch (err) {
+                showError(navigator.onLine ? 'Connection error. Check server.' : 'You are offline.');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Sign In';
+                spinner.classList.add('hidden');
+            }
+        });
+
+        function handlePostLogin() {
+            let modules = currentUser.modules || ['erp', 'pos', 'inventory'];
+            if (typeof modules === 'string') {
+                try { modules = JSON.parse(modules); } catch { modules = ['erp', 'pos', 'inventory']; }
+            }
+            if (currentUser.role === 'Super Admin') modules = ['erp', 'pos', 'inventory'];
+            
+            const validModules = modules.filter(m => moduleConfig[m]);
+            if (validModules.length === 0) {
+                showError('No modules assigned. Contact admin.');
+                handleLogout();
+                return;
+            }
+
+            localStorage.setItem('flowtive_user_modules', JSON.stringify(validModules));
+
+            if (validModules.length === 1) {
+                localStorage.setItem('flowtive_current_module', validModules[0]);
+                window.location.href = moduleConfig[validModules[0]].page;
+                return;
+            }
+
+            showModuleSelection(validModules);
+        }
+
+        function showModuleSelection(modules) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('moduleSection').classList.remove('hidden');
+            document.getElementById('welcomeName').textContent = currentUser.full_name || currentUser.username;
+
+            const list = document.getElementById('moduleList');
+            list.innerHTML = modules.map(mod => {
+                const cfg = moduleConfig[mod];
+                return `
+                    <div class="module-card bg-white dark:bg-neutral-900 rounded-xl p-4 cursor-pointer" data-module="${mod}" onclick="selectModule('${mod}')">
+                        <div class="flex items-center">
+                            <div class="w-11 h-11 bg-neutral-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="${cfg.icon} text-neutral-700 dark:text-neutral-300"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <h3 class="font-medium text-neutral-900 dark:text-neutral-100">${cfg.name}</h3>
+                                <p class="text-sm text-neutral-500">${cfg.desc}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-neutral-400"></i>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectModule(mod) {
+            selectedModule = mod;
+            document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-module="${mod}"]`).classList.add('selected');
+            document.getElementById('continueBtn').disabled = false;
+        }
+
+        function continueToModule() {
+            if (!selectedModule) return;
+            localStorage.setItem('flowtive_current_module', selectedModule);
+            window.location.href = moduleConfig[selectedModule].page;
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('flowtive_user');
+            localStorage.removeItem('flowtive_token');
+            localStorage.removeItem('flowtive_current_module');
+            localStorage.removeItem('flowtive_user_modules');
+            currentUser = null;
+            selectedModule = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('moduleSection').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+    </script>
+</body>
+</html>
